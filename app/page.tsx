@@ -33,7 +33,7 @@ export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [frameAdded, setFrameAdded] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
-  const [coinId, setCoinId] = useState<any>(null)
+  const [coin, setCoin] = useState<any>(null)
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
@@ -110,8 +110,8 @@ export default function App() {
         </header>
 
         <main className="flex-1">
-          {activeTab === "home" && <CoinList setActiveTab={setActiveTab} coinId={coinId} setCoinId={setCoinId} />}
-          {/* {activeTab === "trade" && <TradePage setActiveTab={setActiveTab} coinId={coinId} />} */}
+          {activeTab === "home" && <CoinList setActiveTab={setActiveTab} setCoin={setCoin} />}
+          {activeTab === "trade" && <TradePage setActiveTab={setActiveTab} coin={coin} />}
           {activeTab === "mycoins" && <PortfolioPage setActiveTab={setActiveTab} />}
           {activeTab === "create" && <CreatePage setActiveTab={setActiveTab} />}
           {activeTab === "activity" && <ActivityPage setActiveTab={setActiveTab} />}

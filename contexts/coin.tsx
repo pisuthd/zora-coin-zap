@@ -1,9 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from "react"
-import { getCoinsTopGainers, getCoinsMostValuable, getCoinsNew } from "@zoralabs/coins-sdk";
+import { getCoinsTopGainers, getCoinsMostValuable, getCoinsNew, tradeCoin, getCoin as getZoraCoin, simulateBuy } from "@zoralabs/coins-sdk";
+import { useWriteContract, useSimulateContract, useAccount } from 'wagmi'
+import { parseEther, Address } from 'viem'
 
 export const CoinContext = createContext({})
 
 const Provider = ({ children }: any) => {
+
+    const account = useAccount()
+    // const { writeContract } = useWriteContract()
+    // const publicClient = usePublicClient() 
 
     const [values, dispatch] = useReducer(
         (curVal: any, newVal: any) => ({ ...curVal, ...newVal }), {
@@ -13,8 +19,7 @@ const Provider = ({ children }: any) => {
         topNext: undefined,
         newest: [],
         newestNext: undefined,
-        tick: 1,
-
+        tick: 1
     })
 
     const { tick, trending, topByMarketCap, trendingNext, topNext, newest, newestNext } = values
@@ -51,9 +56,99 @@ const Provider = ({ children }: any) => {
         return response;
     }
 
-    const getCoin = async () => {
+    // const tradeCoin = useCallback(async ({ direction, tokenAddress, amount }: any) => {
 
+    //     const activeAddress = account && account?.address
+
+    //     if (!activeAddress) {
+    //         return 
+    //     }
+
+    //     const tradeParams = {
+    //          direction,
+    //         target: tokenAddress as Address,
+    //         args: {
+    //             recipient: activeAddress as Address,
+    //             orderSize: "1000000000000000"
+    //             // orderSize: parseEther(`${amount}`)
+    //         }
+    //     }
+
+    //     // Create configuration for wagmi
+    //     // const contractCallParams = tradeCoinCall(tradeParams);
+
+    //     console.log("tradeParams: ", tradeParams)
+
+    //     const result = await tradeCoin(tradeParams, walletClient, publicClient);
+
+    //     console.log("result:", result)
+
+    //     // const writeConfig = await simulateContract(wagmiConfig, contractCallParams)
+    //     // const hash = await writeContract(wagmiConfig, writeConfig.request);
+
+    //     // console.log("hash : ", hash)
+
+    //     // const receipt = await waitForTransactionReceipt(wagmiConfig, {
+    //     //     hash
+    //     // })
+
+    //     // console.log("receipt : ", receipt)
+
+    //     // const tradeEvent: any = getTradeFromLogs(receipt, direction);
+
+    //     // if (tradeEvent) {
+    //     //     console.log(tradeEvent);
+    //     //     // tradeEvent.coinsPurchased <-- buy
+    //     //     // tradeEvent.amountPurchased <-- sell
+
+    //     //     return {
+    //     //         transactionHash: hash,
+    //     //         amount: direction === "buy" ? formatEther(tradeEvent.coinsPurchased) : formatEther(tradeEvent.amountPurchased)
+    //     //     }
+
+    //     // } else {
+    //     //     return undefined
+    //     // }
+
+    // }, [ account, publicClient, walletClient ])
+
+
+    const getCoin = async (address: string) => {
+        //       console.log("get coin....")
+        //       const response = await getCoin({
+        //   address
+        // });
+
+        //       console.log("get coin result", coin)
+
+        // const coin = response.data?.zora20Token;
+
+        // return coin
+        return undefined
     }
+
+    //   const getCoinPrice = useCallback(async (address: any) => { 
+
+    //       const response = await getZoraCoin({
+    //   address: address, 
+    // });
+
+    //       console.log("response : ", response)
+
+    // const coin = response.data?.zora20Token;
+
+    // console.log("coin: ", coin)
+
+    // //       const simulation = await simulateBuy({
+    // //   target: address,
+    // //   requestedOrderSize: parseEther("0.001"),
+    // //   publicClient,
+    // // });
+
+    // //       console.log("simulation: ", simulation)
+
+    //       return 1 
+    //   },[publicClient])      
 
     const fetchCoins = async () => {
 
@@ -217,7 +312,8 @@ const Provider = ({ children }: any) => {
             topNext,
             newest,
             newestNext,
-            loadMore
+            loadMore,
+            getCoin
         }), [
         trending,
         topByMarketCap,

@@ -1,33 +1,30 @@
 
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { CoinContext } from "@/contexts/coin";
+import { useBalance, useAccount } from 'wagmi'
 
 type TradePanelProps = {
+  coin: any;
   close: () => void;
+
 };
 
 
-export default function TradePanel({ close }: TradePanelProps) {
-  const [coin, setCoin] = useState<any>(null);
+export default function TradePanel({ coin, close }: TradePanelProps) {
+
+  const {  } = useContext(CoinContext)
+
+  const account = useAccount()
+
+  console.log("account:", account)
+
   const [loading, setLoading] = useState<boolean>(true);
   const [amount, setAmount] = useState<string>("1");
   const [action, setAction] = useState<"buy" | "sell">("buy");
   const [transactionStatus, setTransactionStatus] = useState<string | null>(null);
   const [showDescription, setShowDescription] = useState<boolean>(false);
 
-  useEffect(() => {
-    // Load the selected coin from localStorage
-    const selectedCoinJson = localStorage.getItem("selectedCoin");
-    if (selectedCoinJson) {
-      try {
-        const selectedCoin = JSON.parse(selectedCoinJson);
-        setCoin(selectedCoin);
-      } catch (error) {
-        console.error("Failed to parse selected coin:", error);
-      }
-    }
-    setLoading(false);
-  }, []);
 
   const handleTrade = async () => {
     if (!coin) return;
@@ -65,31 +62,32 @@ export default function TradePanel({ close }: TradePanelProps) {
     return description.replace(urlRegex, '<a href="$1" class="text-blue-500 underline" target="_blank">$1</a>');
   };
 
-  if (loading) {
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">
+  //       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  //     </div>
+  //   );
+  // }
+
+  if (!coin) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="p-4 h-full flex flex-col items-center justify-center text-center">
+        <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h2 className="text-xl font-bold mb-2">No coin data</h2>
+        <p className="text-gray-600 mb-4">Please select a coin from the home page again.</p>
+        {/*<button
+          className="bg-blue-500 text-white px-6 py-2 rounded-lg"
+          onClick={() => setActiveTab("discover")}
+        >
+          Browse Coins
+        </button>*/}
       </div>
     );
   }
 
-  // if (!coin) {
-  //   return (
-  //     <div className="p-4 h-full flex flex-col items-center justify-center text-center">
-  //       <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-  //         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  //       </svg>
-  //       <h2 className="text-xl font-bold mb-2">No coin selected</h2>
-  //       <p className="text-gray-600 mb-4">Please select a coin from the discover page to trade.</p>
-  //       <button
-  //         className="bg-blue-500 text-white px-6 py-2 rounded-lg"
-  //         onClick={() => setActiveTab("discover")}
-  //       >
-  //         Browse Coins
-  //       </button>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="flex flex-col h-full">
@@ -136,8 +134,8 @@ export default function TradePanel({ close }: TradePanelProps) {
             <div className="text-sm text-gray-500">Market Cap</div>
             <div className="font-bold text-lg">{Number(coin.marketCap).toFixed(2)} ETH</div>
             <div className={`text-xs mt-1 ${Number(coin.marketCapDelta24h) >= 0
-                ? 'text-green-500'
-                : 'text-red-500'
+              ? 'text-green-500'
+              : 'text-red-500'
               }`}>
               {Number(coin.marketCapDelta24h) >= 0 ? '+' : ''}{Number(coin.marketCapDelta24h).toFixed(2)}%
             </div>
@@ -239,8 +237,8 @@ export default function TradePanel({ close }: TradePanelProps) {
             <div className="flex">
               <button
                 className={`flex-1 py-3 text-center font-medium ${action === "buy"
-                    ? "text-blue-500 border-b-2 border-blue-500"
-                    : "text-gray-500"
+                  ? "text-blue-500 border-b-2 border-blue-500"
+                  : "text-gray-500"
                   }`}
                 onClick={() => setAction("buy")}
               >
@@ -248,8 +246,8 @@ export default function TradePanel({ close }: TradePanelProps) {
               </button>
               <button
                 className={`flex-1 py-3 text-center font-medium ${action === "sell"
-                    ? "text-red-500 border-b-2 border-red-500"
-                    : "text-gray-500"
+                  ? "text-red-500 border-b-2 border-red-500"
+                  : "text-gray-500"
                   }`}
                 onClick={() => setAction("sell")}
               >
@@ -285,7 +283,7 @@ export default function TradePanel({ close }: TradePanelProps) {
                     className="h-full inline-flex items-center px-3 border-l border-gray-300 bg-gray-50 text-blue-500 text-sm font-medium rounded-r-lg hover:bg-gray-100"
                     onClick={() => {
                       // Set max amount based on wallet balance or available tokens
-                      setAmount(action === "buy" ? "10000" : "500"); // Example values
+                      // setAmount(action === "buy" ? "10000" : "500"); // Example values
                     }}
                   >
                     MAX
@@ -329,12 +327,12 @@ export default function TradePanel({ close }: TradePanelProps) {
             {/* Action button */}
             <button
               className={`w-full py-3 rounded-lg font-medium ${!amount || parseFloat(amount) <= 0
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : transactionStatus === "processing"
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : action === "buy"
-                      ? "bg-blue-500 text-white"
-                      : "bg-red-500 text-white"
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : transactionStatus === "processing"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : action === "buy"
+                    ? "bg-blue-500 text-white"
+                    : "bg-red-500 text-white"
                 }`}
               onClick={handleTrade}
               disabled={!amount || parseFloat(amount) <= 0 || transactionStatus === "processing"}
