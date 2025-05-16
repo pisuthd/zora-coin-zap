@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from "react"
-import { getCoinsTopGainers, getCoinsMostValuable, getCoinsNew, tradeCoin, getCoin as getZoraCoin, simulateBuy } from "@zoralabs/coins-sdk";
+import { getProfileBalances, getCoinsTopGainers, getCoinsMostValuable, getCoinsNew, tradeCoin, getCoin as getZoraCoin, simulateBuy } from "@zoralabs/coins-sdk";
 import { useWriteContract, useSimulateContract, useAccount } from 'wagmi'
 import { parseEther, Address } from 'viem'
 
@@ -19,136 +19,44 @@ const Provider = ({ children }: any) => {
         topNext: undefined,
         newest: [],
         newestNext: undefined,
-        tick: 1
+        tick: 1,
+        myTokens: [],
+        myTokensNext: undefined
     })
 
-    const { tick, trending, topByMarketCap, trendingNext, topNext, newest, newestNext } = values
+    const { tick, trending, topByMarketCap, trendingNext, topNext, newest, newestNext, myTokens, myTokensNext } = values
 
-    const fetchTopGainers = async () => {
+    const fetchMyTokens = useCallback(async (myAddress: any, after = undefined) => {
 
-        const response = await getCoinsTopGainers({
-            count: 10,        // Optional: number of coins per page
-            after: undefined, // Optional: for pagination
+        const response = await getProfileBalances({
+            identifier: myAddress,
+            count: 10,
+            after
         });
 
-        const tokens = response.data?.exploreList?.edges?.map((edge: any) => edge.node);
+        const profile: any = response.data?.profile;
 
-        console.log(`Top Gainers (${tokens?.length || 0} coins):`);
+        let myNewTokens = after === undefined ? [] : myTokens
+        let newCursor = undefined
 
-        tokens?.forEach((coin: any, index: number) => {
-            console.log("coin:", coin)
-            const percentChange = coin.marketCapDelta24h
-                ? `${parseFloat(coin.marketCapDelta24h).toFixed(2)}%`
-                : "N/A";
-
-            console.log(`${index + 1}. ${coin.name} (${coin.symbol})`);
-            console.log(`   24h Change: ${percentChange}`);
-            console.log(`   Market Cap: ${coin.marketCap}`);
-            console.log(`   Volume 24h: ${coin.volume24h}`);
-            console.log('-----------------------------------');
-        });
-
-        // For pagination
-        if (response.data?.exploreList?.pageInfo?.endCursor) {
-            console.log("Next page cursor:", response.data?.exploreList?.pageInfo?.endCursor);
+        if (profile?.coinBalances && profile.coinBalances.edges.length > 0) {
+            const tokens = profile.coinBalances.edges?.map((edge: any) => edge.node);
+            myNewTokens = [...myNewTokens, ...tokens]
         }
 
-        return response;
-    }
+        if (profile?.coinBalances?.pageInfo?.endCursor) {
+            newCursor = profile.coinBalances?.pageInfo?.endCursor
+        }
 
-    // const tradeCoin = useCallback(async ({ direction, tokenAddress, amount }: any) => {
+        console.log(myTokens, myTokensNext)
 
-    //     const activeAddress = account && account?.address
+        dispatch({
+            myTokens: myNewTokens,
+            myTokensNext: newCursor
+        })
 
-    //     if (!activeAddress) {
-    //         return 
-    //     }
+    }, [myTokens, myTokensNext])
 
-    //     const tradeParams = {
-    //          direction,
-    //         target: tokenAddress as Address,
-    //         args: {
-    //             recipient: activeAddress as Address,
-    //             orderSize: "1000000000000000"
-    //             // orderSize: parseEther(`${amount}`)
-    //         }
-    //     }
-
-    //     // Create configuration for wagmi
-    //     // const contractCallParams = tradeCoinCall(tradeParams);
-
-    //     console.log("tradeParams: ", tradeParams)
-
-    //     const result = await tradeCoin(tradeParams, walletClient, publicClient);
-
-    //     console.log("result:", result)
-
-    //     // const writeConfig = await simulateContract(wagmiConfig, contractCallParams)
-    //     // const hash = await writeContract(wagmiConfig, writeConfig.request);
-
-    //     // console.log("hash : ", hash)
-
-    //     // const receipt = await waitForTransactionReceipt(wagmiConfig, {
-    //     //     hash
-    //     // })
-
-    //     // console.log("receipt : ", receipt)
-
-    //     // const tradeEvent: any = getTradeFromLogs(receipt, direction);
-
-    //     // if (tradeEvent) {
-    //     //     console.log(tradeEvent);
-    //     //     // tradeEvent.coinsPurchased <-- buy
-    //     //     // tradeEvent.amountPurchased <-- sell
-
-    //     //     return {
-    //     //         transactionHash: hash,
-    //     //         amount: direction === "buy" ? formatEther(tradeEvent.coinsPurchased) : formatEther(tradeEvent.amountPurchased)
-    //     //     }
-
-    //     // } else {
-    //     //     return undefined
-    //     // }
-
-    // }, [ account, publicClient, walletClient ])
-
-
-    const getCoin = async (address: string) => {
-        //       console.log("get coin....")
-        //       const response = await getCoin({
-        //   address
-        // });
-
-        //       console.log("get coin result", coin)
-
-        // const coin = response.data?.zora20Token;
-
-        // return coin
-        return undefined
-    }
-
-    //   const getCoinPrice = useCallback(async (address: any) => { 
-
-    //       const response = await getZoraCoin({
-    //   address: address, 
-    // });
-
-    //       console.log("response : ", response)
-
-    // const coin = response.data?.zora20Token;
-
-    // console.log("coin: ", coin)
-
-    // //       const simulation = await simulateBuy({
-    // //   target: address,
-    // //   requestedOrderSize: parseEther("0.001"),
-    // //   publicClient,
-    // // });
-
-    // //       console.log("simulation: ", simulation)
-
-    //       return 1 
-    //   },[publicClient])      
 
     const fetchCoins = async () => {
 
@@ -305,7 +213,6 @@ const Provider = ({ children }: any) => {
     const coinContext = useMemo(
         () => ({
             fetchCoins,
-            fetchTopGainers,
             trending,
             topByMarketCap,
             trendingNext,
@@ -313,7 +220,9 @@ const Provider = ({ children }: any) => {
             newest,
             newestNext,
             loadMore,
-            getCoin
+            fetchMyTokens,
+            myTokens,
+            myTokensNext
         }), [
         trending,
         topByMarketCap,
@@ -321,7 +230,10 @@ const Provider = ({ children }: any) => {
         topNext,
         newest,
         newestNext,
-        loadMore
+        loadMore,
+        fetchMyTokens,
+        myTokens,
+        myTokensNext
     ])
 
     return (

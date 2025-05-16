@@ -112,7 +112,7 @@ export default function App() {
         <main className="flex-1">
           {activeTab === "home" && <CoinList setActiveTab={setActiveTab} setCoin={setCoin} />}
           {activeTab === "trade" && <TradePage setActiveTab={setActiveTab} coin={coin} />}
-          {activeTab === "mycoins" && <PortfolioPage setActiveTab={setActiveTab} />}
+          {activeTab === "mycoins" && <PortfolioPage setActiveTab={setActiveTab} setCoin={setCoin} />}
           {activeTab === "create" && <CreatePage setActiveTab={setActiveTab} />}
           {activeTab === "activity" && <ActivityPage setActiveTab={setActiveTab} />}
           {/* {activeTab === "features" && <Features setActiveTab={setActiveTab} />} */}
