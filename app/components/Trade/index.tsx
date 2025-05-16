@@ -8,7 +8,7 @@ import {
   useOpenUrl,
 } from "@coinbase/onchainkit/minikit";
 import { tradeCoinCall, getOnchainCoinDetails } from "@zoralabs/coins-sdk";
-import { parseEther, erc20Abi, formatUnits, Address } from 'viem'
+import { parseEther, erc20Abi, formatUnits, Address, formatEther } from 'viem'
 
 type TradePanelProps = {
   coin: any;
@@ -18,9 +18,9 @@ type TradePanelProps = {
 export function TradePage({ coin, setActiveTab }: TradePanelProps) {
 
 
-  // const [ poolAddress, setPoolAddress] = useState("")
+  const [ poolAddress, setPoolAddress] = useState("")
 
-  const publicClient = usePublicClient()
+  const publicClient: any = usePublicClient()
 
   const { } = useContext(CoinContext)
 
@@ -47,6 +47,11 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
         abi: erc20Abi,
         functionName: 'decimals',
       },
+      {
+        address: poolAddress,
+        abi: [{"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"} ],
+        functionName: 'token0',
+      }
       // {
       //   address: coin.address,
       //   abi: erc20Abi,
@@ -55,10 +60,18 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
       // }
     ] : []
   })
- 
+  console.log("result.data", result?.data)
 
   const tokenBalance = result?.data ? formatUnits(result?.data[0], result?.data[1]) : 0
   // const tokenNotApproved = result?.data ? result?.data[2] !== 0n : false 
+
+  let tokenNotSupported = false
+
+  if (result?.data && result?.data[2]) { 
+    tokenNotSupported = result.data[2] !== "0x4200000000000000000000000000000000000006"
+  }
+
+  console.log("tokenNotSupported: ", tokenNotSupported)
 
   const openUrl = useOpenUrl();
 
@@ -91,17 +104,18 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
 
   const { status, writeContract } = useWriteContract()
 
-  // useEffect(() => {
-  //   if (coin && coin.address) {
-  //     (async () => { 
-  //       const { pool } = await getOnchainCoinDetails({
-  //         coin: coin.address,
-  //         publicClient
-  //       })
-  //       setPoolAddress(pool) 
-  //     })()
-  //   }
-  // },[coin])
+  useEffect(() => {
+    if (coin && coin.address) {
+      (async () => { 
+        const output = await getOnchainCoinDetails({
+          coin: coin.address,
+          publicClient
+        })
+        console.log("output: ", output)
+        setPoolAddress(output.pool) 
+      })()
+    }
+  },[coin])
 
   useEffect(() => {
     if (status && status === "success") {
@@ -145,6 +159,8 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
       </div>
     );
   }
+
+
 
   return (
     <div className="flex flex-col h-full">
@@ -266,10 +282,10 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Total Supply:</span>
-              <span>{Number(coin.totalSupply).toLocaleString()} coins</span>
+              <span>{Number(coin.totalSupply).toLocaleString()} {coin?.symbol}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600">Contract:</span>
+              <span className="text-gray-600">Token Contract:</span>
               <div className="flex items-center">
                 <span onClick={() => openUrl(`https://basescan.org/address/${coin.address}`)} className="font-mono text-xs hover:underline cursor-pointer truncate max-w-[140px]">
                   {coin.address}
@@ -278,6 +294,25 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
                   className="ml-1 text-blue-500"
                   onClick={() => {
                     navigator.clipboard.writeText(coin.address);
+                    // Show copy notification
+                  }}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Uniswap Pool Contract:</span>
+              <div className="flex items-center">
+                <span onClick={() => openUrl(`https://basescan.org/address/${poolAddress}`)} className="font-mono text-xs hover:underline cursor-pointer truncate max-w-[140px]">
+                  {poolAddress}
+                </span>
+                <button
+                  className="ml-1 text-blue-500"
+                  onClick={() => {
+                    navigator.clipboard.writeText(poolAddress);
                     // Show copy notification
                   }}
                 >
@@ -310,6 +345,28 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
 
           </div>)}
 
+        { tokenNotSupported && (
+          <div className="  my-4 bg-amber-50 border border-amber-200 rounded-lg shadow-sm overflow-hidden">
+  <div className="p-4">
+    <div className="flex items-start">
+      <div className="flex-shrink-0">
+        <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+        </svg>
+      </div>
+      <div className="ml-3 flex-1">
+        <h3 className="text-sm font-medium text-amber-800">Warning</h3>
+        <div className="mt-1 text-sm text-amber-700">
+          We only support ETH for buying content coins. Other tokens like ZORA are not supported at the moment.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          )
+
+        }
+
         {/* Trading section - in the normal document flow */}
         <div className="mt-6 bg-white border rounded-xl overflow-hidden">
           <div className="border-b">
@@ -319,7 +376,10 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
                   ? "text-blue-500 border-b-2 border-blue-500"
                   : "text-gray-500"
                   }`}
-                onClick={() => setAction("buy")}
+                onClick={() => {
+                  setAction("buy")
+                  setAmount("0.001")
+                }}
               >
                 Buy
               </button>
@@ -328,19 +388,17 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
                   ? "text-red-500 border-b-2 border-red-500"
                   : "text-gray-500"
                   }`}
-                onClick={() => setAction("sell")}
+                onClick={() => {
+                  setAction("sell")
+                  setAmount("1000")
+                }}
               >
                 Sell
               </button>
             </div>
           </div>
 
-          <div className="p-4">
-            {/* Current price info */}
-            {/* <div className="flex justify-between text-sm mb-3">
-              <span className="text-gray-500">Current Price</span>
-              <span className="font-medium">0.00001182 ETH per token</span>
-            </div> */}
+          <div className="p-4"> 
 
             <div className="flex justify-between text-sm mb-3">
               {action === "buy" ? (
@@ -387,18 +445,19 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
 
             {/* Price summary */}
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
+            <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Token to Swap</span>
+                <span> 
+                  {action === "buy" && (tokenNotSupported ? `ZORA ERC-20` : `ETH`)}
+                  {action === "sell" && `${coin?.symbol} ERC-20`}
+                </span>
+              </div> 
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Subtotal</span>
-                <span>{(parseFloat(amount || "0") * 0.00001182).toFixed(6)} ETH</span>
-              </div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Network Fee (est.)</span>
-                <span>0.000025 ETH</span>
-              </div>
-              <div className="border-t border-gray-200 my-2"></div>
-              <div className="flex justify-between font-medium">
-                <span>Total</span>
-                <span>{(parseFloat(amount || "0") * 0.00001182 + 0.000025).toFixed(6)} ETH</span>
+                <span className="text-gray-600">Amount Received</span>
+                <span>{ (data && data?.result[1]) ? Number(formatEther(data?.result[1])).toLocaleString() : "N/A" } {` `}
+                  { action === "buy" ? coin?.symbol : "ETH"}
+                
+                </span>
               </div>
             </div>
 
