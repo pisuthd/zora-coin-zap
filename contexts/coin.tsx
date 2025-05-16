@@ -7,9 +7,7 @@ export const CoinContext = createContext({})
 
 const Provider = ({ children }: any) => {
 
-    const account = useAccount()
-    // const { writeContract } = useWriteContract()
-    // const publicClient = usePublicClient() 
+    const account = useAccount() 
 
     const [values, dispatch] = useReducer(
         (curVal: any, newVal: any) => ({ ...curVal, ...newVal }), {
