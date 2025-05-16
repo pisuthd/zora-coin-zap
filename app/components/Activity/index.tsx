@@ -6,18 +6,18 @@ type ActivityPageProps = {
   setActiveTab: (tab: string) => void;
 };
 
-type ActivityItem = {
-  id: string;
-  type: "buy" | "sell" | "create" | "reward";
-  coinName: string;
-  coinImage?: string;
-  amount: string;
-  value: string;
-  timestamp: number;
-};
+// type ActivityItem = {
+//   id: string;
+//   type: "buy" | "sell" | "create" | "reward";
+//   coinName: string;
+//   coinImage?: string;
+//   amount: string;
+//   value: string;
+//   timestamp: number;
+// };
 
 export function ActivityPage({ setActiveTab }: ActivityPageProps) {
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [activities, setActivities] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -157,7 +157,7 @@ export function ActivityPage({ setActiveTab }: ActivityPageProps) {
       <h1 className="text-xl font-bold mb-4">Activity</h1>
       
       <div className="space-y-4">
-        {activities.map((activity) => (
+        {activities.map((activity: any) => (
           <div key={activity.id} className="flex items-center p-3 bg-white rounded-lg border border-gray-200">
             {getActivityIcon(activity.type)}
             
