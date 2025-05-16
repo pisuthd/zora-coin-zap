@@ -176,62 +176,74 @@ export function CoinList({ setActiveTab, setCoin }: CoinListProps) {
             </div>
           ) : (
             <div className="space-y-4 animate-fade-in">
-              {getCoinsToDisplay().map((coin: any, index: number) => (
-                <div
-                  key={coin.id}
-                  className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                  onClick={() => handleCoinClick(coin)}
-                >
-                  {/* Main card content */}
-                  <div className="flex p-3">
-                    {/* Coin image */}
-                    <div className="w-14 h-14 mr-3 flex-shrink-0">
-                      <img
-                        src={coin.mediaContent?.previewImage?.small || 'https://via.placeholder.com/100'}
-                        alt={coin.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
+              {getCoinsToDisplay().map((coin: any, index: number) => {
+
+                const currentPrice = Number(coin.marketCap) / Number(coin.totalSupply)
+
+                return (
+                  <div
+                    key={coin.id}
+                    className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                    onClick={() => handleCoinClick({
+                      ...coin,
+                      currentPrice
+                    })}
+                  >
+                    {/* Main card content */}
+                    <div className="flex p-3">
+                      {/* Coin image */}
+                      <div className="w-14 h-14 mr-3 flex-shrink-0">
+                        <img
+                          src={coin.mediaContent?.previewImage?.small || 'https://via.placeholder.com/100'}
+                          alt={coin.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      </div>
+
+                      {/* Coin details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium truncate">{coin.name}</h3>
+                          <span className="text-xs text-gray-500 ml-2">
+                            {activeView === "newest" ? <>{formatTimeAgo(coin.createdAt)}</> : <> #{index + 1}</>}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center text-sm text-gray-500 mt-0.5">
+                          <span className="truncate">by {coin.creatorProfile?.handle || 'Unknown'}</span>
+                        </div>
+
+                        <div className="flex justify-between items-end mt-2">
+                          <div>
+                            <div className="text-xs text-gray-500">Volume 24h</div>
+                            <div className="font-medium">${Number(coin.volume24h).toLocaleString()}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-gray-500">Market Cap</div>
+                            <div className="font-medium">${Number(coin.marketCap).toLocaleString()}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-gray-500">Current Price</div>
+                            <div className="font-medium">${currentPrice > 0.00001 ? currentPrice.toFixed(6) : currentPrice.toFixed(9)}</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Coin details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium truncate">{coin.name}</h3>
-                        <span className="text-xs text-gray-500 ml-2">
-                          {activeView === "newest" ? <>{formatTimeAgo(coin.createdAt)}</> : <> #{index + 1}</>}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center text-sm text-gray-500 mt-0.5">
-                        <span className="truncate">by {coin.creatorProfile?.handle || 'Unknown'}</span>
-                      </div>
-
-                      <div className="flex justify-between items-end mt-2">
-                        <div>
-                          <div className="text-xs text-gray-500">Volume 24h</div>
-                          <div className="font-medium">${Number(coin.volume24h).toLocaleString()}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs text-gray-500">Market Cap</div>
-                          <div className="font-medium">${Number(coin.marketCap).toLocaleString()}</div>
-                        </div>
+                    {/* Footer stats */}
+                    <div className="border-t px-3 py-2 flex justify-between text-xs text-gray-500">
+                      <div>Holders: {coin.uniqueHolders}</div>
+                      <div>Transfers: {coin.transfers.count}</div>
+                      <div>
+                        {Number(coin.marketCapDelta24h) > 0
+                          ? <span className="text-green-500">+{Number(coin.marketCapDelta24h).toFixed(2)}%</span>
+                          : <span className="text-red-500">{Number(coin.marketCapDelta24h).toFixed(2)}%</span>
+                        }
                       </div>
                     </div>
                   </div>
-
-                  {/* Footer stats */}
-                  <div className="border-t px-3 py-2 flex justify-between text-xs text-gray-500">
-                    <div>Holders: {coin.uniqueHolders}</div>
-                    <div>Transfers: {coin.transfers.count}</div>
-                    <div>
-                      {Number(coin.marketCapDelta24h) > 0
-                        ? <span className="text-green-500">+{Number(coin.marketCapDelta24h).toFixed(2)}%</span>
-                        : <span className="text-red-500">{Number(coin.marketCapDelta24h).toFixed(2)}%</span>
-                      }
-                    </div>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 

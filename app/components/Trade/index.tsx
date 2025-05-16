@@ -17,8 +17,7 @@ type TradePanelProps = {
 
 export function TradePage({ coin, setActiveTab }: TradePanelProps) {
 
-
-  const [ poolAddress, setPoolAddress] = useState("")
+  const [ poolAddress, setPoolAddress] = useState<any>("")
 
   const publicClient: any = usePublicClient()
 
@@ -33,34 +32,59 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
 
   // console.log("pool address" , poolAddress)
 
-  const result: any = useReadContracts({
-    allowFailure: false,
-    contracts: (address && coin) ? [
-      {
-        address: coin.address,
-        abi: erc20Abi,
-        functionName: 'balanceOf',
-        args: [address],
-      },
-      {
-        address: coin.address,
-        abi: erc20Abi,
-        functionName: 'decimals',
-      },
-      {
-        address: poolAddress,
-        abi: [{"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"} ],
-        functionName: 'token0',
-      }
-      // {
-      //   address: coin.address,
-      //   abi: erc20Abi,
-      //   functionName: 'allowance',
-      //   args: [address, "0x7266895aca76bedf84cc63810494019f043056c3" ],
-      // }
-    ] : []
-  })
-  console.log("result.data", result?.data)
+  let result: any = undefined
+
+  if (address && coin) {
+    result = useReadContracts({
+      allowFailure: false,
+      contracts: [
+        {
+          address: coin.address,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [address],
+        },
+        {
+          address: coin.address,
+          abi: erc20Abi,
+          functionName: 'decimals',
+        },
+        {
+          address: poolAddress,
+          abi: [{"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"} ],
+          functionName: 'token0',
+        }
+      ]  
+    }) 
+  }
+
+  // const result: any = useReadContracts({
+  //   allowFailure: false,
+  //   contracts: (address && coin) ? [
+  //     {
+  //       address: coin.address,
+  //       abi: erc20Abi,
+  //       functionName: 'balanceOf',
+  //       args: [address],
+  //     },
+  //     {
+  //       address: coin.address,
+  //       abi: erc20Abi,
+  //       functionName: 'decimals',
+  //     },
+  //     {
+  //       address: poolAddress,
+  //       abi: [{"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"} ],
+  //       functionName: 'token0',
+  //     }
+  //     // {
+  //     //   address: coin.address,
+  //     //   abi: erc20Abi,
+  //     //   functionName: 'allowance',
+  //     //   args: [address, "0x7266895aca76bedf84cc63810494019f043056c3" ],
+  //     // }
+  //   ] : []
+  // }) 
 
   const tokenBalance = result?.data ? formatUnits(result?.data[0], result?.data[1]) : 0
   // const tokenNotApproved = result?.data ? result?.data[2] !== 0n : false 
@@ -70,8 +94,6 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
   if (result?.data && result?.data[2]) { 
     tokenNotSupported = result.data[2] !== "0x4200000000000000000000000000000000000006"
   }
-
-  console.log("tokenNotSupported: ", tokenNotSupported)
 
   const openUrl = useOpenUrl();
 
@@ -100,7 +122,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
     value: tradeParams.args.orderSize,
   });
 
-  console.log("data:", data)
+  console.log("simulate data:", data)
 
   const { status, writeContract } = useWriteContract()
 
@@ -110,8 +132,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
         const output = await getOnchainCoinDetails({
           coin: coin.address,
           publicClient
-        })
-        console.log("output: ", output)
+        }) 
         setPoolAddress(output.pool) 
       })()
     }
@@ -121,7 +142,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
     if (status && status === "success") {
       // Redirect to portfolio after success
       setTimeout(() => {
-        setActiveTab("portfolio");
+        setActiveTab("mycoins");
       }, 2000);
     }
   }, [status])
@@ -159,8 +180,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
       </div>
     );
   }
-
-
+ 
 
   return (
     <div className="flex flex-col h-full">
@@ -303,8 +323,12 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
                 </button>
               </div>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Pool Type:</span>
+              <span className="font-mono">Uniswap V3</span>
+            </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600">Uniswap Pool Contract:</span>
+              <span className="text-gray-600">Pool Contract:</span>
               <div className="flex items-center">
                 <span onClick={() => openUrl(`https://basescan.org/address/${poolAddress}`)} className="font-mono text-xs hover:underline cursor-pointer truncate max-w-[140px]">
                   {poolAddress}
@@ -400,7 +424,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
 
           <div className="p-4"> 
 
-            <div className="flex justify-between text-sm mb-3">
+            {/* <div className="flex justify-between text-sm mb-3">
               {action === "buy" ? (
                 <>
                   <span className="text-gray-500">Your Balance:</span>
@@ -412,6 +436,10 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
                   <span className="font-medium">{Number(tokenBalance).toFixed(3)} {coin?.symbol}</span>
                 </>
               )}
+            </div> */}
+             <div className="flex justify-between text-sm mb-3">
+              <span className="text-gray-500">Current Price</span>
+              <span className="font-medium">{(coin && coin.currentPrice) ? Number(coin.currentPrice / 2500).toFixed(9) : 0} ETH per token</span>
             </div>
 
             {/* Amount input with max button */}
@@ -432,9 +460,9 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
                   <button
                     type="button"
                     className="h-full inline-flex items-center px-3 border-l border-gray-300 bg-gray-50 text-blue-500 text-sm font-medium rounded-r-lg hover:bg-gray-100"
-                    onClick={() => {
-                      // Set max amount based on wallet balance or available tokens
-                      setAmount(action === "buy" ? "10000" : "500"); // Example values
+                    onClick={() => { 
+                      // TODO: correct this
+                      setAmount(action === "buy" ? "1" : "1000"); 
                     }}
                   >
                     MAX
@@ -455,10 +483,15 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">Amount Received</span>
                 <span>{ (data && data?.result[1]) ? Number(formatEther(data?.result[1])).toLocaleString() : "N/A" } {` `}
-                  { action === "buy" ? coin?.symbol : "ETH"}
-                
+                  { action === "buy" ? coin?.symbol : "ETH"} 
                 </span>
               </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Slippage</span>
+                <span> 
+                    { (data && data?.result[1] && coin && coin.currentPrice)  ? Math.abs(100-(100 * (Number(coin.currentPrice / 2500))) /(Number(amount) / Number(formatEther(data?.result[1])) ) ).toFixed(2) : "N/A" }%
+                </span>
+              </div> 
             </div>
 
             {/* Balance info for context */}
