@@ -1,104 +1,85 @@
-# MiniKit Template
+# ZoraCoinZap
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-onchain --mini`](), configured with:
+**MiniApp for discovering, trading, and creating Zora content coins on Base. Built with Base MiniKit and live on Farcaster.**
 
-- [MiniKit](https://docs.base.org/builderkits/minikit/overview)
-- [OnchainKit](https://www.base.org/builders/onchainkit)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Next.js](https://nextjs.org/docs)
+- [YouTube](https://youtu.be/nu55M73QGF)  
+- [Farcaster](https://warpcast.com/miniapps/36FzHji8AWjr/zoracoinzap)  
+- [Dapp](https://zora-coin-zap.vercel.app/)
+ 
+## 🔍 Overview
 
-## Getting Started
+ZoraCoinZap is a lightweight MiniApp that lets users:
 
-1. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
+- Discover trending Zora content coins  
+- Track and manage a personal coin portfolio  
+- Buy/sell content coins with ETH  
+- Create new ERC-20 content coins in minutes  
 
-2. Verify environment variables, these will be set up by the `npx create-onchain --mini` command:
+Built using [Base MiniKit](https://docs.base.org/base-minikit/overview) and integrated with [Coinbase Wallet](https://www.coinbase.com/wallet), this app is fully live on Base Mainnet and available on [Farcaster MiniApps](https://www.farcaster.xyz/).
 
-You can regenerate the FARCASTER Account Association environment variables by running `npx create-onchain --manifest` in your project directory.
+## ⚙️ Features
 
-The environment variables enable the following features:
+### 🧠 Content Coin Creation
+- Mint ERC-20 content coins on Base via Zora's Coin Protocol
+- Instantly list them on Uniswap V3 with ETH pairing
+- 1% of supply sent to the creator, rest seeded into the liquidity pool
 
-- Frame metadata - Sets up the Frame Embed that will be shown when you cast your frame
-- Account association - Allows users to add your frame to their account, enables notifications
-- Redis API keys - Enable Webhooks and background notifications for your application by storing users notification details
+### 🔎 Coin Discovery
+- Browse top, trending, and newest Zora content coins
+- Filter and search by name, market cap, or creator
 
-```bash
-# Required for Frame metadata
-NEXT_PUBLIC_URL=
-NEXT_PUBLIC_VERSION=
-NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME=
-NEXT_PUBLIC_ICON_URL=
-NEXT_PUBLIC_IMAGE_URL=
-NEXT_PUBLIC_SPLASH_IMAGE_URL=
-NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR=
+### 💼 Portfolio Tracking
+- View your collected and created coins
+- Real-time portfolio performance and transaction history
 
-# Required to allow users to add your frame
-FARCASTER_HEADER=
-FARCASTER_PAYLOAD=
-FARCASTER_SIGNATURE=
+### 💸 Trading Interface
+- Simple buy/sell interface with live pricing
+- Fully on-chain, secure ETH transactions
 
-# Required for webhooks and background notifications
-REDIS_URL=
-REDIS_TOKEN=
-```
+## 🚀 How To Use
 
-3. Start the development server:
-```bash
-npm run dev
-```
+### 🔄 How to Trade
+1. Visit [zora-coin-zap.vercel.app](https://zora-coin-zap.vercel.app) or open the app on Farcaster MiniApps  
+2. Connect your wallet  
+3. Explore trending/top/newest coins  
+4. Click a coin to view details and enter amount to buy or sell  
+5. Confirm the transaction in your wallet
 
-## Template Features
+### ✨ How to Create a Coin
+1. Go to the **Create** tab  
+2. Enter the name, symbol, and description  
+3. Upload an image and metadata  
+4. Click **Create** and approve the transaction
 
-### Frame Configuration
-- `.well-known/farcaster.json` endpoint configured for Frame metadata and account association
-- Frame metadata automatically added to page headers in `layout.tsx`
+By default, 1 billion tokens are minted. 1% is sent to your wallet; 99% goes to Uniswap V3 paired with a small amount of ETH.
 
-### Background Notifications
-- Redis-backed notification system using Upstash
-- Ready-to-use notification endpoints in `api/notify` and `api/webhook`
-- Notification client utilities in `lib/notification-client.ts`
+---
 
-### Theming
-- Custom theme defined in `theme.css` with OnchainKit variables
-- Pixel font integration with Pixelify Sans
-- Dark/light mode support through OnchainKit
+## 🔗 Deployment Artifacts
 
-### MiniKit Provider
-The app is wrapped with `MiniKitProvider` in `providers.tsx`, configured with:
-- OnchainKit integration
-- Access to Frames context
-- Sets up Wagmi Connectors
-- Sets up Frame SDK listeners
-- Applies Safe Area Insets
+Since we rely on Zora and Uniswap contracts, here are key on-chain artifacts:
 
-## Customization
+- [$LEO token (demo)](https://basescan.org/token/0xe133597f615fa79ee22a733e91b4d8b59fc92b07)  
+- [$LEO Uniswap V3 Pool](https://basescan.org/address/0xC362b89F3A012960b1e97dcD3734066f84Fc4f10)  
+- [Buy transaction #1](https://basescan.org/tx/0x906c76b9fbc65048da97611b2d55c31f8b435cfb597eea12440cc915882ba8bc)  
+- [Buy transaction #2](https://basescan.org/tx/0xa8c8a5542635f803b525748d50495f97d2d15dd2f56712318b06fa281d2f3330)
 
-To get started building your own frame, follow these steps:
+## 🧪 Tech Stack
 
-1. Remove the DemoComponents:
-   - Delete `components/DemoComponents.tsx`
-   - Remove demo-related imports from `page.tsx`
+- **Base MiniKit**   
+- **Zora Protocol SDK**  
+- **Next.js + TypeScript**  
+- **Farcaster MiniApp**
+- **Pinate Cloud**
 
-2. Start building your Frame:
-   - Modify `page.tsx` to create your Frame UI
-   - Update theme variables in `theme.css`
-   - Adjust MiniKit configuration in `providers.tsx`
+## 📜 License
 
-3. Add your frame to your account:
-   - Cast your frame to see it in action
-   - Share your frame with others to start building your community
+MIT License © 2025
 
-## Learn More
+## 🙌 Acknowledgements
 
-- [MiniKit Documentation](https://docs.base.org/builderkits/minikit/overview)
-- [OnchainKit Documentation](https://docs.base.org/builderkits/onchainkit/getting-started)
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Base](https://base.org)  
+- [Zora Protocol](https://zora.co)  
+- [Farcaster](https://www.farcaster.xyz/)  
+- [Uniswap](https://uniswap.org/)  
+- [Coinbase Wallet](https://www.coinbase.com/wallet)
