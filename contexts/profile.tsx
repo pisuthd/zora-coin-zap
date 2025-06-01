@@ -23,7 +23,7 @@ type ProfileData = {
     followingCount?: number;
   }
 };
- 
+
 
 const ProfileProvider = ({ children }: any) => {
   const [values, dispatch] = useReducer(
@@ -51,25 +51,12 @@ const ProfileProvider = ({ children }: any) => {
     }
   };
 
-  const updateProfile = async (updates: Partial<ProfileData['profile']>) => {
-    dispatch({ loading: true });
-    try {
-      dispatch({
-        profileData: { profile: updates },
-        loading: false
-      });
-    } catch (err) {
-      dispatch({ error: err, loading: false });
-    }
-  };
-
   const profileContext = useMemo(
     () => ({
       profileData,
       loading,
       error,
-      loadProfile,
-      updateProfile
+      loadProfile
     }),
     [profileData, loading, error]
   );
