@@ -531,7 +531,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
                   {action === "buy" ? coin?.symbol : (tokenNotSupported ? requiredTokenSymbol : "ETH")}
                 </span>
               </div>
-              <div className="flex justify-between text-sm mb-2">
+              {/* <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">Slippage</span>
                 <span>
                   {(data && data?.result[1] && coin && coin.currentPrice) ?
@@ -539,7 +539,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
                     "N/A"
                   }%
                 </span>
-              </div>
+              </div> */}
             </div>
 
             {/* Balance info for context */}
