@@ -179,9 +179,9 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
         setNeedsApproval(false)
       } else {
         // Trade successful, redirect to portfolio
-        setTimeout(() => {
-          setActiveTab("mycoins");
-        }, 2000);
+        // setTimeout(() => {
+        //   setActiveTab("mycoins");
+        // }, 2000);
       }
     }
   }, [status, approving])
