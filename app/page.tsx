@@ -23,16 +23,17 @@ import { Button } from "./components/DemoComponents";
 import { Icon } from "./components/DemoComponents";
 import { Features } from "./components/DemoComponents";
 import { CoinList } from "./components/CoinList";
-import { Home } from "lucide-react"
+import { Home, Zap } from "lucide-react"
 import { TradePage } from "./components/Trade";
 import { PortfolioPage } from "./components/Portfolio";
 import { CreatePage } from "./components/Create";
 import { ActivityPage } from "./components/Activity";
+import { CreatorProfilePage } from "./components/Profile"
 
 export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [frameAdded, setFrameAdded] = useState(false);
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState<any>("home");
   const [coin, setCoin] = useState<any>(null)
 
   const addFrame = useAddFrame();
@@ -100,11 +101,11 @@ export default function App() {
           </div>
           <div>{saveFrameButton}</div>
           <div className="flex items-center px-2">
-            {/* <div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-purple-500 rounded-full flex items-center justify-center mr-2 shadow-md">
-              <span className="text-white font-bold text-xs transform -rotate-12">ZCZ</span>
-            </div> */}
+             <div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-purple-500 rounded-full flex items-center justify-center mr-2 shadow-md">
+              <Zap size={22} className="text-white transform rotate-12"/>
+            </div> 
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-              ZoraCoinZap
+              Zap
             </h1>
           </div>
         </header>
@@ -115,7 +116,8 @@ export default function App() {
           {activeTab === "mycoins" && <PortfolioPage setActiveTab={setActiveTab} setCoin={setCoin} />}
           {activeTab === "create" && <CreatePage setActiveTab={setActiveTab} />}
           {activeTab === "activity" && <ActivityPage setActiveTab={setActiveTab} />}
-          {/* {activeTab === "features" && <Features setActiveTab={setActiveTab} />} */}
+          {activeTab === "profile" && <CreatorProfilePage setActiveTab={setActiveTab} />}
+ 
           <div className="sticky bottom-0 bg-white border-t mt-auto">
             <div className="flex justify-around py-3">
               <button
@@ -142,16 +144,16 @@ export default function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="text-xs mt-1">Create</span>
-              </button>
-              {/*<button
-                className={`flex flex-col items-center px-4 ${activeTab === "activity" ? "text-blue-500" : "text-gray-500"}`}
-                onClick={() => setActiveTab("activity")}
-              >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-xs mt-1">Activity</span>
-              </button>*/}
+              </button> 
+              <button
+      className={`flex flex-col items-center px-4 ${activeTab === "profile" ? "text-blue-500" : "text-gray-500"}`}
+      onClick={() => setActiveTab("profile")}
+    >
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+      <span className="text-xs mt-1">Profile</span>
+    </button>
             </div>
           </div>
         </main>

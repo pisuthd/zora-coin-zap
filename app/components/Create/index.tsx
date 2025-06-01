@@ -182,11 +182,10 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
             {step === 1 ? "Back" : "Previous Step"}
           </button>)}
         {step === 1 && (<h1 className="text-xl font-bold">Create Content Coin</h1>)}
-        <p className="text-gray-600 text-sm mt-1 mb-4">
-          Create your content coin on Base via ZORA's Coins Protocol. You'll receive 1% of the initial supply and earn from every trade.
-        </p>
+
+
         {!address && (
-          <div className=" my-4 mt-0 bg-amber-50 border border-amber-200 rounded-lg shadow-sm overflow-hidden">
+          <div className=" my-2 bg-amber-50 border border-amber-200 rounded-lg shadow-sm overflow-hidden">
             <div className="p-4">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
@@ -217,6 +216,21 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
           <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step === 2 ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'
             }`}>
             2
+          </div>
+        </div>
+
+        <div className="mt-0 mb-4 bg-blue-50 border border-blue-200 rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4">
+            <div className="text-sm text-blue-700">
+              <p className="font-medium mb-2">How it works:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Create your content coin via Zora’s Coins Protocol</li>
+                <li>1 billion tokens are minted automatically</li>
+                <li>You receive 1% (10 million) of the total supply</li>
+                <li>The rest is paired with ETH and listed on Uniswap V3</li>
+                <li>You earn fees from every trade</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -316,13 +330,12 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
                 onChange={handleFileChange}
               />
             </div>
-
             <button
               className="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
               onClick={handleNextStep}
             >
               Next Step
-            </button>
+            </button> 
           </>
         )}
 
