@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { useBalance, useAccount } from 'wagmi'
+import { useBalance, useAccount, useReadContract } from 'wagmi'
 import { CoinContext } from "@/contexts/coin";
-import { formatEther } from "viem";
+import { formatEther, formatUnits, erc20Abi } from "viem";
 
 type PortfolioPageProps = {
   setCoin: (coin: any) => void;
   setActiveTab: (tab: string) => void;
 };
 
+const ZORA_TOKEN_ADDRESS = "0x1111111111166b7FE7bd91427724B487980aFc69";
 
 export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
 
@@ -33,6 +34,24 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
     address: address,
   })
 
+  // Get ZORA token balance
+  const { data: zoraBalance } = useReadContract({
+    address: ZORA_TOKEN_ADDRESS,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address
+    }
+  });
+
+  // Get ZORA token decimals
+  const { data: zoraDecimals } = useReadContract({
+    address: ZORA_TOKEN_ADDRESS,
+    abi: erc20Abi,
+    functionName: 'decimals',
+  });
+
   const handleCoinClick = (coin: any) => { 
     setCoin(coin) 
     setActiveTab("trade");
@@ -52,6 +71,11 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
   }
 
   const portfolioDelta = calculateAverage(deltas)
+
+  // Format ZORA balance
+  const formattedZoraBalance = zoraBalance && zoraDecimals 
+    ? formatUnits(zoraBalance, zoraDecimals)
+    : "0";
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -75,19 +99,34 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
                 </div>
               </div>
             </div>
-
           </div>)}
 
-        {/* Wallet Balance */}
-        <div className="bg-white border rounded-xl p-4 mb-4 flex items-center">
-          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-            <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-            </svg>
+        {/* Token Balances */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {/* ETH Balance */}
+          <div className="bg-white border rounded-xl p-4 flex items-center">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+              <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">ETH Balance</div>
+              <div className="font-bold text-lg">{Number(balance?.data?.formatted || 0).toFixed(4)}</div>
+            </div>
           </div>
-          <div>
-            <div className="text-sm text-gray-500">Wallet Balance</div>
-            <div className="font-bold text-lg">{Number(balance?.data?.formatted || 0).toFixed(6) || 0} ETH</div>
+
+          {/* ZORA Balance */}
+          <div className="bg-white border rounded-xl p-4 flex items-center">
+            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+              <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">ZORA Balance</div>
+              <div className="font-bold text-lg">{Number(formattedZoraBalance).toFixed(2)}</div>
+            </div>
           </div>
         </div>
 
@@ -102,16 +141,64 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
               }`}>
               {portfolioDelta >= 0 ? '+' : ''}{portfolioDelta.toFixed(3)} %
             </span>
-            <span className="text-xs ml-1 text-white/70">Changes</span>
+            <span className="text-xs ml-1 text-white/70">24h Change</span>
           </div>
+        </div>
+
+        {/* Quick Action Buttons */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <button
+            className="bg-blue-500 text-white p-3 rounded-xl font-medium flex items-center justify-center space-x-2 hover:bg-blue-600 transition-colors"
+            onClick={() => setActiveTab("create")}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Create Coin</span>
+          </button>
+          
+          <button
+            className="bg-purple-500 text-white p-3 rounded-xl font-medium flex items-center justify-center space-x-2 hover:bg-purple-600 transition-colors"
+            onClick={() => setActiveTab("home")}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Discover</span>
+          </button>
         </div>
       </div>
 
-      {/* Coin list */}
+      {/* Coin Holdings List */}
       <div className="flex-1 overflow-auto px-4 pb-20">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">Your Coins</h2>
+          <span className="text-sm text-gray-500">{myTokens.length} coins</span>
+        </div>
+
         {myTokens.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No any coins on this account
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-600 mb-2">No coins yet</h3>
+            <p className="text-gray-500 mb-4">Start by creating your first coin or buying existing ones</p>
+            <div className="flex space-x-3 justify-center">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                onClick={() => setActiveTab("create")}
+              >
+                Create Coin
+              </button>
+              <button
+                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                onClick={() => setActiveTab("home")}
+              >
+                Browse Coins
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -126,7 +213,7 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
               return (
                 <div
                   key={coin.id}
-                  className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                  className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
                   onClick={() => handleCoinClick({
                     ...coin.coin,
                     currentBalance,
@@ -135,7 +222,7 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
                     priceChanges: delta
                   })}
                 >
-                  <div className="flex p-3">
+                  <div className="flex p-4">
                     {/* Coin image */}
                     <div className="w-16 h-16 mr-3 flex-shrink-0">
                       <img
@@ -147,51 +234,39 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
 
                     {/* Coin details */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center">
-                        <h3 className="font-medium truncate">{coin?.coin?.name}</h3>
-                        {/* {coin.creatorProfile?.handle === "myusername" && (
-                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">Creator</span>
-                      )} */}
-                      </div>
-
-                      <div className="flex items-center text-sm text-gray-500 mt-0.5">
-                        <span>@{coin?.coin?.creatorProfile?.handle}</span>
-                      </div>
-
-                      <div className="flex justify-between items-end mt-2">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-xs text-gray-500">Holdings</div>
-                          <div className="font-medium">{Number(currentBalance).toLocaleString()} {` ${coin?.coin?.symbol}`}</div>
+                          <h3 className="font-medium truncate">{coin?.coin?.name}</h3>
+                          <div className="flex items-center text-sm text-gray-500 mt-0.5">
+                            <span>@{coin?.coin?.creatorProfile?.handle}</span>
+                          </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-gray-500">Value</div>
-                          <div className="font-medium">${currentValue.toFixed(3)}</div>
+                          <div className="text-sm text-gray-500">Value</div>
+                          <div className="font-bold">${currentValue.toFixed(3)}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-end mt-3">
+                        <div>
+                          <div className="text-xs text-gray-500">Holdings</div>
+                          <div className="font-medium text-sm">{Number(currentBalance).toLocaleString()} {coin?.coin?.symbol}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">24h Change</div>
+                          <div className={`font-medium text-sm ${delta >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {delta >= 0 ? '+' : ''}{delta.toFixed(2)}%
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Profit/Loss stats */}
-                  <div className={`px-3 py-2 ${delta && delta >= 0
-                    ? 'bg-green-50'
-                    : 'bg-red-50'
-                    }`}>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Profit/Loss</span>
-                      <div className="flex items-center">
-                        {/* <span className={`font-medium ${coin.profitLoss && coin.profitLoss >= 0
-                          ? 'text-green-600'
-                          : 'text-red-600'
-                          }`}>
-                          {coin.profitLoss && coin.profitLoss >= 0 ? '+' : ''}{coin.profitLoss?.toFixed(3)} ETH
-                        </span> */}
-                        <span className={`ml-2 text-xs ${delta && delta >= 0
-                          ? 'text-green-600'
-                          : 'text-red-600'
-                          }`}>
-                          {delta && delta >= 0 ? '+' : ''}{delta.toFixed(3)}%
-                        </span>
-                      </div>
+                  {/* Quick actions footer */}
+                  <div className="border-t bg-gray-50 px-4 py-2">
+                    <div className="flex justify-between items-center text-xs text-gray-600">
+                      <span>Market Cap: ${Number(coin?.coin?.marketCap).toLocaleString()}</span>
+                      <span>Holders: {coin?.coin?.uniqueHolders}</span>
                     </div>
                   </div>
                 </div>
@@ -199,6 +274,7 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
             })}
           </div>
         )}
+        
         {loading && (
           <div className="flex mt-8 items-center justify-center h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
