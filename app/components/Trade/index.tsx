@@ -30,64 +30,35 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
     address: address,
   })
 
-  // console.log("pool address" , poolAddress)
+  let contractParams: any = []  
 
-  let result: any = undefined
-
-  if (address && coin) {
-    result = useReadContracts({
-      allowFailure: false,
-      contracts: [
-        {
-          address: coin.address,
-          abi: erc20Abi,
-          functionName: 'balanceOf',
-          args: [address],
-        },
-        {
-          address: coin.address,
-          abi: erc20Abi,
-          functionName: 'decimals',
-        },
-        {
-          address: poolAddress,
-          abi: [{"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"} ],
-          functionName: 'token0',
-        }
-      ]  
-    }) 
+  if (address && coin) { 
+    contractParams = [
+      {
+        address: coin.address,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [address],
+      },
+      {
+        address: coin.address,
+        abi: erc20Abi,
+        functionName: 'decimals',
+      },
+      {
+        address: poolAddress,
+        abi: [{"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"} ],
+        functionName: 'token0',
+      }
+    ] 
   }
 
-  // const result: any = useReadContracts({
-  //   allowFailure: false,
-  //   contracts: (address && coin) ? [
-  //     {
-  //       address: coin.address,
-  //       abi: erc20Abi,
-  //       functionName: 'balanceOf',
-  //       args: [address],
-  //     },
-  //     {
-  //       address: coin.address,
-  //       abi: erc20Abi,
-  //       functionName: 'decimals',
-  //     },
-  //     {
-  //       address: poolAddress,
-  //       abi: [{"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"} ],
-  //       functionName: 'token0',
-  //     }
-  //     // {
-  //     //   address: coin.address,
-  //     //   abi: erc20Abi,
-  //     //   functionName: 'allowance',
-  //     //   args: [address, "0x7266895aca76bedf84cc63810494019f043056c3" ],
-  //     // }
-  //   ] : []
-  // }) 
-
-  const tokenBalance = result?.data ? formatUnits(result?.data[0], result?.data[1]) : 0
-  // const tokenNotApproved = result?.data ? result?.data[2] !== 0n : false 
+  const result: any = useReadContracts({
+    allowFailure: false,
+    contracts:  contractParams
+  }) 
+ 
+  const tokenBalance = result?.data ? formatUnits(result?.data[0], result?.data[1]) : 0 
 
   let tokenNotSupported = false
 
@@ -106,7 +77,10 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
     target: (coin.address) as Address,
     args: {
       recipient: address as Address,
-      orderSize: parseEther(`${amount}`)
+      orderSize: parseEther(`${amount}`),
+      minAmountOut: 0n,
+      sqrtPriceLimitX96: 0n,
+      tradeReferrer: address as Address
     }
   }
 
@@ -117,12 +91,13 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
 
   console.log("contractCallParams: ", contractCallParams)
 
-  const { data } = useSimulateContract({
+  const { data, error: swapError }  = useSimulateContract({
     ...contractCallParams,
-    value: tradeParams.args.orderSize,
+    value: action === "buy" ? tradeParams.args.orderSize : 0n,
   });
-
+ 
   console.log("simulate data:", data)
+  console.log("simulate error:", swapError)
 
   const { status, writeContract } = useWriteContract()
 
@@ -422,21 +397,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
             </div>
           </div>
 
-          <div className="p-4"> 
-
-            {/* <div className="flex justify-between text-sm mb-3">
-              {action === "buy" ? (
-                <>
-                  <span className="text-gray-500">Your Balance:</span>
-                  <span className="font-medium">{balance?.data?.formatted || 0} ETH</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-gray-500">Your Balance:</span>
-                  <span className="font-medium">{Number(tokenBalance).toFixed(3)} {coin?.symbol}</span>
-                </>
-              )}
-            </div> */}
+          <div className="p-4">  
              <div className="flex justify-between text-sm mb-3">
               <span className="text-gray-500">Current Price</span>
               <span className="font-medium">{(coin && coin.currentPrice) ? Number(coin.currentPrice / 2500).toFixed(9) : 0} ETH per token</span>
