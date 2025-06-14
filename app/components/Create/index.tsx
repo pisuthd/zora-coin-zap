@@ -4,8 +4,8 @@ import { useCallback, useState, useEffect } from "react";
 import { uploadImageToPinata, uploadJsonToPinata } from "@/lib/pinata";
 import { useAccount, useSimulateContract, useWriteContract } from 'wagmi'
 import { createCoinCall } from "@zoralabs/coins-sdk"
-import { AICoinCreator } from "../AI/AICoinCreator";
-import { Brain } from "lucide-react";
+// import { AICoinCreator } from "../AI/AICoinCreator"; 
+import { Info, X } from "lucide-react"
 
 type CreatePageProps = {
   setActiveTab: (tab: string) => void;
@@ -27,7 +27,8 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
   const [description, setDescription] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [coinParams, setCoinParams] = useState<any>(null)
+  const [coinParams, setCoinParams] = useState<any>(null) 
+  const [showInfo, setShowInfo] = useState<boolean>(false)
 
   // Additional properties
   const [properties, setProperties] = useState<MetadataProperty[]>([
@@ -36,9 +37,9 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
 
   // UI state
   const [loading, setLoading] = useState<boolean>(false);
-  const [step, setStep] = useState<0 | 1 | 2>(0); // Added step 0 for AI suggestions
+  const [step, setStep] = useState<0 | 1 | 2>(1); // Added step 0 for AI suggestions
   const [error, setError] = useState<string | null>(null);
-  const [showAI, setShowAI] = useState<boolean>(true);
+  const [showAI, setShowAI] = useState<boolean>(false);
   // const [success, setSuccess] = useState<boolean>(false);
 
   console.log("coinParams: ", coinParams)
@@ -106,26 +107,26 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
     setStep(2);
   };
 
-  const handleAISuggestionSelect = (suggestion: any) => {
-    setTitle(suggestion.name);
-    setSymbol(suggestion.symbol);
-    setDescription(suggestion.description);
-    setProperties([
-      { key: "category", value: suggestion.category },
-      { key: "trendScore", value: suggestion.trendScore.toString() },
-      { key: "marketOpportunity", value: suggestion.marketOpportunity.toString() },
-      ...suggestion.keyFeatures.map((feature: string, index: number) => ({
-        key: `feature_${index + 1}`,
-        value: feature
-      }))
-    ]);
-    setStep(1); // Go to manual creation step with pre-filled data
-  };
+  // const handleAISuggestionSelect = (suggestion: any) => {
+  //   setTitle(suggestion.name);
+  //   setSymbol(suggestion.symbol);
+  //   setDescription(suggestion.description);
+  //   setProperties([
+  //     { key: "category", value: suggestion.category },
+  //     { key: "trendScore", value: suggestion.trendScore.toString() },
+  //     { key: "marketOpportunity", value: suggestion.marketOpportunity.toString() },
+  //     ...suggestion.keyFeatures.map((feature: string, index: number) => ({
+  //       key: `feature_${index + 1}`,
+  //       value: feature
+  //     }))
+  //   ]);
+  //   setStep(1); // Go to manual creation step with pre-filled data
+  // };
 
-  const handleSkipAI = () => {
-    setStep(1);
-    setShowAI(false);
-  };
+  // const handleSkipAI = () => {
+  //   setStep(1);
+  //   setShowAI(false);
+  // };
 
   const onCreate = useCallback(async () => {
 
@@ -195,49 +196,45 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
   return (
     <div className="flex flex-col h-full">
       <div className=" z-10 bg-white border-b px-4 py-3 flex flex-col">
-        {step > 0 && (
-          <button
-            className="flex items-center text-gray-600"
-            onClick={() => {
-              if (step === 1) {
-                if (showAI) setStep(0);
-                else setActiveTab("discover");
-              } else {
-                setStep(1);
-              }
-            }}
-          >
-            <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            {step === 1 ? (showAI ? "Back to AI" : "Back") : "Previous Step"}
-          </button>)}
-        {step === 0 && (<h1 className="text-xl font-bold">AI Coin Creator</h1>)}
-        {step === 1 && (<h1 className="text-xl font-bold">Create Content Coin</h1>)}
+        <div className="flex items-center justify-between">
+          <div>
+            {step > 1 && (
+              <button
+                className="flex items-center text-gray-600"
+                onClick={() => {
+                  if (step === 1) {
+                    if (showAI) setStep(0);
+                    else setActiveTab("discover");
+                  } else {
+                    setStep(1);
+                  }
+                }}
+              >
+                <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                {step === 1 ? (showAI ? "Back to AI" : "Back") : "Previous Step"}
+              </button>)}
+            {/* {step === 0 && (<h1 className="text-xl font-bold">AI Coin Creator</h1>)} */}
+            {step === 1 && (<h1 className="text-xl font-bold">Create Content Coin</h1>)}
 
+          </div>
+          <div className="flex items-center space-x-2">
 
-        {!address && (
-          <div className=" my-2 bg-amber-50 border border-amber-200 rounded-lg shadow-sm overflow-hidden">
-            <div className="p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3 flex-1">
-                  <h3 className="text-sm font-medium text-amber-800">Wallet not connected</h3>
-                  <div className="mt-1 text-sm text-amber-700">
-                    Connect your wallet to create your coin
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>)}
+            <button
+              onClick={() => setShowInfo(true)}
+              className="p-2 rounded-full bg-gray-100 text-gray-600"
+            >
+              <Info size={16} />
+            </button>
+          </div>
+
+        </div>
+
       </div>
 
       <div className="flex-1 overflow-auto p-4 pb-20">
-        {step === 0 && (
+        {/* {step === 0 && (
           <div className="space-y-4">
             <AICoinCreator onSuggestionSelect={handleAISuggestionSelect} />
             
@@ -253,7 +250,7 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
               </button>
             </div>
           </div>
-        )}
+        )} */}
 
         {step > 0 && (
           <>
@@ -271,20 +268,6 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
               </div>
             </div>
 
-            <div className="mt-0 mb-4 bg-blue-50 border border-blue-200 rounded-lg shadow-sm overflow-hidden">
-              <div className="p-4">
-                <div className="text-sm text-blue-700">
-                  <p className="font-medium mb-2">How it works:</p>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Create your content coin via Zora's Coins Protocol</li>
-                    <li>1 billion tokens are minted automatically</li>
-                    <li>You receive 1% (10 million) of the total supply</li>
-                    <li>The rest is paired with ETH and listed on Uniswap V3</li>
-                    <li>You earn fees from every trade</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
 
             {error && (
               <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4">
@@ -564,6 +547,46 @@ export function CreatePage({ setActiveTab }: CreatePageProps) {
           </>
         )}
       </div>
+
+
+      {/* Info Modal */}
+      {showInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div className="p-4 border-b">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">How it works</h3>
+                <button onClick={() => setShowInfo(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-4">
+              <div className="  bg-blue-50 border border-blue-200 rounded-lg shadow-sm overflow-hidden">
+                <div className="p-4 px-2">
+                  <div className="text-sm text-blue-700">
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>We allow users to easily create content coins on Base using Zora’s Coins Protocol, which automatically mints 1 billion tokens into circulation</li>
+                      <li>You receive 1% (10 million tokens), and the rest is paired with ETH and listed on Uniswap V3</li>
+                      <li>You earn fees every time your coin is traded</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 border-t">
+              <button
+                onClick={() => setShowInfo(false)}
+                className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
