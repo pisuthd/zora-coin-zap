@@ -96,12 +96,20 @@ export function CoinList({ setActiveTab, setCoin }: CoinListProps) {
         <p className="text-sm text-gray-600 mb-3">
           The fastest way to interact with Zora coins on Base
         </p>
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-600 transition-colors"
-          onClick={() => setActiveTab("create")}
-        >
-          Create a Coin
-        </button>
+        <div className="flex gap-2 justify-center">
+          <button
+            className="bg-purple-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-600 transition-colors flex items-center gap-1"
+            onClick={() => setActiveTab("ai-swipe")}
+          >
+            🤖 AI Swipe
+          </button>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-600 transition-colors"
+            onClick={() => setActiveTab("create")}
+          >
+            Create a Coin
+          </button>
+        </div>
       </div>
 
       {/* Search bar */}
