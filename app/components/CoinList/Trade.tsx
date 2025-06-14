@@ -157,10 +157,10 @@ export default function TradePanel({ coin, close }: TradePanelProps) {
             <div className="font-bold text-lg">{coin.uniqueHolders}</div>
           </div>
 
-          <div className="bg-white border rounded-xl p-3">
+          {/* <div className="bg-white border rounded-xl p-3">
             <div className="text-sm text-gray-500">Transfers</div>
             <div className="font-bold text-lg">{coin.transfers.count}</div>
-          </div>
+          </div> */}
         </div>
 
         {/* Description */}
