@@ -22,7 +22,8 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "./components/DemoComponents";
 import { Icon } from "./components/DemoComponents";
 import { CoinList } from "./components/CoinList";
-import { Home, Zap } from "lucide-react"
+import { TinderSwipe } from "./components/AI/TinderSwipe";
+import { Home, Zap, Brain } from "lucide-react"
 import { PortfolioPage } from "./components/Portfolio";
 import { CreatePage } from "./components/Create";
 import { CreatorProfilePage } from "./components/Profile"
@@ -109,6 +110,7 @@ export default function App() {
 
         <main className="flex-1">
           {activeTab === "home" && <CoinList setActiveTab={setActiveTab} setCoin={setCoin} />} 
+          {activeTab === "ai-swipe" && <TinderSwipe setActiveTab={setActiveTab} setCoin={setCoin} />}
           {activeTab === "mycoins" && <PortfolioPage setActiveTab={setActiveTab} setCoin={setCoin} />}
           {activeTab === "create" && <CreatePage setActiveTab={setActiveTab} />} 
           {activeTab === "profile" && <CreatorProfilePage setActiveTab={setActiveTab} />}
@@ -116,35 +118,42 @@ export default function App() {
           <div className="sticky bottom-0 bg-white border-t mt-auto">
             <div className="flex justify-around py-3">
               <button
-                className={`flex flex-col items-center px-4 ${activeTab === "home" ? "text-blue-500" : "text-gray-500"}`}
+                className={`flex flex-col items-center px-3 ${activeTab === "home" ? "text-blue-500" : "text-gray-500"}`}
                 onClick={() => setActiveTab("home")}
               >
-                <Home />
+                <Home size={20} />
                 <span className="text-xs mt-1">Discover</span>
               </button>
               <button
-                className={`flex flex-col items-center px-4 ${activeTab === "mycoins" ? "text-blue-500" : "text-gray-500"}`}
+                className={`flex flex-col items-center px-3 ${activeTab === "ai-swipe" ? "text-purple-500" : "text-gray-500"}`}
+                onClick={() => setActiveTab("ai-swipe")}
+              >
+                <Brain size={20} />
+                <span className="text-xs mt-1">AI Swipe</span>
+              </button>
+              <button
+                className={`flex flex-col items-center px-3 ${activeTab === "mycoins" ? "text-blue-500" : "text-gray-500"}`}
                 onClick={() => setActiveTab("mycoins")}
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
                 <span className="text-xs mt-1">Portfolio</span>
               </button>
               <button
-                className={`flex flex-col items-center px-4 ${activeTab === "create" ? "text-blue-500" : "text-gray-500"}`}
+                className={`flex flex-col items-center px-3 ${activeTab === "create" ? "text-blue-500" : "text-gray-500"}`}
                 onClick={() => setActiveTab("create")}
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="text-xs mt-1">Create</span>
               </button>
               <button
-                className={`flex flex-col items-center px-4 ${activeTab === "profile" ? "text-blue-500" : "text-gray-500"}`}
+                className={`flex flex-col items-center px-3 ${activeTab === "profile" ? "text-blue-500" : "text-gray-500"}`}
                 onClick={() => setActiveTab("profile")}
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <span className="text-xs mt-1">Profile</span>
