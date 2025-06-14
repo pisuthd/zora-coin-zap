@@ -233,7 +233,7 @@ export function CoinList({ setActiveTab, setCoin }: CoinListProps) {
                     {/* Footer stats */}
                     <div className="border-t px-3 py-2 flex justify-between text-xs text-gray-500">
                       <div>Holders: {coin.uniqueHolders}</div>
-                      <div>Transfers: {coin.transfers.count}</div>
+                      {/* <div>Transfers: {coin.transfers.count}</div> */}
                       <div>
                         {Number(coin.marketCapDelta24h) > 0
                           ? <span className="text-green-500">+{Number(coin.marketCapDelta24h).toFixed(2)}%</span>
