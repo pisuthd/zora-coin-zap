@@ -7,7 +7,7 @@ export const CoinContext = createContext({})
 
 const Provider = ({ children }: any) => {
 
-    const account = useAccount() 
+    const account = useAccount()
 
     const [values, dispatch] = useReducer(
         (curVal: any, newVal: any) => ({ ...curVal, ...newVal }), {
@@ -134,7 +134,7 @@ const Provider = ({ children }: any) => {
             case "trending":
                 if (trendingNext) {
                     const response = await getCoinsTopGainers({
-                        count: 5,
+                        count: 15,
                         after: trendingNext,
                     });
                     const tokens = response.data?.exploreList?.edges?.map((edge: any) => edge.node);
@@ -162,7 +162,7 @@ const Provider = ({ children }: any) => {
                     let newCursor = undefined
 
                     const response = await getCoinsMostValuable({
-                        count: 5,
+                        count: 15,
                         after: topNext,
                     });
 
@@ -186,7 +186,7 @@ const Provider = ({ children }: any) => {
                     let newCursor = undefined
 
                     const response = await getCoinsNew({
-                        count: 5,
+                        count: 15,
                         after: newestNext,
                     });
 

@@ -21,7 +21,7 @@ const defaultAISettings: AISettings = {
 
 export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: HomeProps) {
 
-    const { trending, topByMarketCap, newest, fetchCoins }: any = useContext(CoinContext);
+    const { trending, topByMarketCap, newest, fetchCoins, loadMore }: any = useContext(CoinContext);
 
     const [coinList, setCoinList] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -45,7 +45,7 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
 
     useEffect(() => {
         const processCoins = async () => {
-            const allCoins = [...trending, ...topByMarketCap, ...newest];
+            const allCoins = [...trending, ...topByMarketCap, ...newest].sort(() => Math.random() - 0.5);
 
             if (allCoins.length === 0) return;
 
@@ -271,6 +271,7 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                                 setCurrentIndex(0);
                                 setLocalLikedCoins([]);
                                 setPassedCoins([]);
+                                loadMore("trending")
                             }}
                             className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium"
                         >
@@ -404,7 +405,7 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <Cylinder size={16} className="text-orange-500"   />
+                                            <Cylinder size={16} className="text-orange-500" />
                                             {/* <div className="w-4 h-4 bg-orange-500 rounded-full"></div> */}
                                             <div>
                                                 <div className="text-gray-500">Market Cap</div>
