@@ -52,7 +52,7 @@ export class ClaudeAIService {
       });
 
       // Extract text content from the response
-      const textContent = message.content.find(block => block.type === 'text');
+      const textContent: any = message.content.find(block => block.type === 'text');
       if (!textContent) {
         throw new Error('No text content in Claude response');
       }
@@ -417,7 +417,7 @@ Provide only the JSON response, no additional text.
   filterAndRankCoins(analyzedCoins: (any & CoinAnalysis)[], settings: AISettings): (any & CoinAnalysis)[] {
     // Start with all coins sorted by AI score
     let allCoins = [...analyzedCoins].sort((a, b) => {
-      const recommendationPriority = { 'BUY': 4, 'HOLD': 3, 'WATCH': 2, 'SELL': 1 };
+      const recommendationPriority: any = { 'BUY': 4, 'HOLD': 3, 'WATCH': 2, 'SELL': 1 };
       const scoreA = a.aiScore + (recommendationPriority[a.recommendation] * 5);
       const scoreB = b.aiScore + (recommendationPriority[b.recommendation] * 5);
       return scoreB - scoreA;
@@ -471,7 +471,7 @@ Provide only the JSON response, no additional text.
       }, {} as Record<string, number>);
 
     const topCategory = Object.entries(topCategories)
-      .sort(([, a], [, b]) => b - a)[0]?.[0] || 'Mixed';
+      .sort(([, a]: any, [, b]:any) => b - a)[0]?.[0] || 'Mixed';
 
     return `AI analyzed ${coins.length} coins (avg score: ${avgScore}/100). ${buyCount} BUY, ${holdCount} HOLD, ${watchCount} WATCH, ${sellCount} SELL. Top category: ${topCategory}.`;
   }

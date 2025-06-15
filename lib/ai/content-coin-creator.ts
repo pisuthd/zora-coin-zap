@@ -257,7 +257,7 @@ export class ContentCoinEngine {
       'Technical development challenges'
     ];
 
-    const competitionRisks = {
+    const competitionRisks: any = {
       'HIGH': ['Intense competition from established players'],
       'MEDIUM': ['Growing competitive landscape'],
       'LOW': ['Early market advantage may not last']

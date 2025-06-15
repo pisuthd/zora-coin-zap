@@ -13,11 +13,12 @@ import { parseEther, erc20Abi, formatUnits, Address, formatEther, parseUnits } f
 type TradePanelProps = {
   coin: any;
   setActiveTab: (tab: string) => void;
+  previousTab?: string;
 };
 
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006"; // Base WETH
 
-export function TradePage({ coin, setActiveTab }: TradePanelProps) {
+export function TradePage({ coin, setActiveTab, previousTab = "home" }: TradePanelProps) {
   const [poolAddress, setPoolAddress] = useState<any>("")
   const [needsApproval, setNeedsApproval] = useState(false)
   const [approving, setApproving] = useState(false)
@@ -226,9 +227,9 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
         <p className="text-gray-600 mb-4">Please select a coin from the home page again.</p>
         <button
           className="bg-blue-500 text-white px-6 py-2 rounded-lg"
-          onClick={() => setActiveTab("home")}
+          onClick={() => setActiveTab(previousTab)}
         >
-          Browse Coins
+          Go Back
         </button>
       </div>
     );
@@ -240,7 +241,7 @@ export function TradePage({ coin, setActiveTab }: TradePanelProps) {
       <div className="bg-white border-b px-4 py-3 flex items-center">
         <button
           className="flex items-center text-gray-600"
-          onClick={() => setActiveTab("home")}
+          onClick={() => setActiveTab(previousTab)}
         >
           <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

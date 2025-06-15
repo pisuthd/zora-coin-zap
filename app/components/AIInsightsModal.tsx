@@ -124,7 +124,7 @@ export function AIInsightsModal({ isOpen, onClose, coin }: AIInsightsModalProps)
           <div className="space-y-2">
             <h3 className="font-semibold text-gray-800">Strengths</h3>
             <div className="space-y-2">
-              {coin.strengths?.map((strength, index) => (
+              {coin.strengths?.map((strength: any, index: number) => (
                 <div key={index} className="flex items-center space-x-2 text-sm">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <span className="text-gray-700">{strength}</span>
@@ -137,7 +137,7 @@ export function AIInsightsModal({ isOpen, onClose, coin }: AIInsightsModalProps)
           <div className="space-y-2">
             <h3 className="font-semibold text-gray-800">Weaknesses</h3>
             <div className="space-y-2">
-              {coin.weaknesses?.map((weakness, index) => (
+              {coin.weaknesses?.map((weakness:any, index:number) => (
                 <div key={index} className="flex items-center space-x-2 text-sm">
                   <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                   <span className="text-gray-700">{weakness}</span>

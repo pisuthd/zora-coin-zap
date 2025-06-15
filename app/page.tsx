@@ -33,16 +33,21 @@ export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [frameAdded, setFrameAdded] = useState(false);
   const [activeTab, setActiveTabInner] = useState<any>("home");
+  const [previousTab, setPreviousTab] = useState<any>("home");
   const [coin, setCoin] = useState<any>(null);
   const [likedCoins, setLikedCoins] = useState<any[]>([]);
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
 
-  const setActiveTab = (tab: string) => {
+  const setActiveTab = useCallback((tab: string) => {
+    // Don't track trade as previous tab to avoid circular navigation
+    if (activeTab !== "trade") {
+      setPreviousTab(activeTab);
+    }
     setActiveTabInner(tab);
     window.scrollTo({ top: 0, behavior: 'auto' });  
-  };
+  },[activeTab])
 
   useEffect(() => {
     if (!isFrameReady) {
@@ -119,7 +124,7 @@ export default function App() {
           {/* {activeTab === "home" && <CoinList setActiveTab={setActiveTab} setCoin={setCoin} />} 
           {activeTab === "ai-swipe" && <TinderSwipe setActiveTab={setActiveTab} setCoin={setCoin} likedCoins={likedCoins} setLikedCoins={setLikedCoins} />} */}
           {activeTab === "home" && <HomePage setActiveTab={setActiveTab} setCoin={setCoin} likedCoins={likedCoins} setLikedCoins={setLikedCoins} />}
-          {activeTab === "trade" && <TradePage setActiveTab={setActiveTab} coin={coin} />}
+          {activeTab === "trade" && <TradePage setActiveTab={setActiveTab} coin={coin} previousTab={previousTab} />}
           {activeTab === "favorites" && <FavoritesPage setActiveTab={setActiveTab} setCoin={setCoin} likedCoins={likedCoins} setLikedCoins={setLikedCoins} />}
           {activeTab === "mycoins" && <PortfolioPage setActiveTab={setActiveTab} setCoin={setCoin} />}
           {activeTab === "create" && <CreatePage setActiveTab={setActiveTab} />}

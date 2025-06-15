@@ -63,7 +63,7 @@ export function AISettingsModal({ isOpen, onClose, settings, onSave }: AISetting
             <>
               {/* Risk Tolerance */}
               <div className="space-y-3">
-                <label className="block font-medium flex items-center space-x-2">
+                <label className="  font-medium flex items-center space-x-2">
                   <Shield size={16} className="text-gray-600" />
                   <span>Risk Tolerance</span>
                 </label>
