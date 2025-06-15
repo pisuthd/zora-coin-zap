@@ -2,7 +2,10 @@
 
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { CoinContext } from "@/contexts/coin";
-import { Heart, X, TrendingUp, Users, DollarSign, Zap, Settings, Brain, Star, Shield, AlertTriangle } from 'lucide-react';
+import { Cylinder, CircleCheckBig, Sparkles, Heart, X, TrendingUp, Users, DollarSign, Zap, Settings, Brain, Star, Shield, AlertTriangle, Eye, Loader2 } from 'lucide-react';
+import { AISettingsModal } from '@/app/components/AISettingsModal';
+import { AIInsightsModal } from '@/app/components/AIInsightsModal';
+import { aiService, AISettings, CoinAnalysis } from '@/lib/ai/claude-service';
 
 type HomeProps = {
     setCoin: (coin: any) => void;
@@ -11,16 +14,9 @@ type HomeProps = {
     setLikedCoins: (coins: any[]) => void;
 };
 
-const defaultAISettings = {
+const defaultAISettings: AISettings = {
     riskTolerance: 'MEDIUM',
-    categories: ['AI & Tech', 'Gaming & NFTs', 'Memes & Viral', 'Art & Music', 'DeFi & Finance', 'Other'],
-    preferredCategories: ['AI & Tech', 'Gaming & NFTs'],
-    minMarketCap: 100000,
-    maxMarketCap: 10000000,
-    aiRecommendationsEnabled: true,
-    socialSignalsWeight: 0.7,
-    technicalSignalsWeight: 0.8,
-    momentumSignalsWeight: 0.9
+    aiRecommendationsEnabled: false
 };
 
 export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: HomeProps) {
@@ -32,9 +28,11 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
     const [passedCoins, setPassedCoins] = useState<any[]>([]);
     const [localLikedCoins, setLocalLikedCoins] = useState<any[]>([]);
     const [showAISettings, setShowAISettings] = useState(false);
-    const [aiSettings, setAiSettings] = useState(defaultAISettings);
+    const [aiSettings, setAiSettings] = useState<AISettings>(defaultAISettings);
     const [showAIInsights, setShowAIInsights] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [aiSummary, setAiSummary] = useState<string>('');
 
     const cardRef = useRef<HTMLDivElement>(null);
     const startY = useRef(0);
@@ -46,11 +44,79 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
     }, []);
 
     useEffect(() => {
+        const processCoins = async () => {
+            const allCoins = [...trending, ...topByMarketCap, ...newest];
 
-        const allCoins = [...trending, ...topByMarketCap, ...newest];
-        setCoinList(allCoins)
+            if (allCoins.length === 0) return;
 
-    }, [trending, topByMarketCap, newest])
+            if (aiSettings.aiRecommendationsEnabled) {
+                setIsAnalyzing(true);
+                try {
+                    // Analyze coins with AI
+                    const analyzedCoins = await aiService.analyzeCoinsInBatches(allCoins, aiSettings, 3);
+
+                    // Filter and rank coins based on AI analysis
+                    const filteredCoins = aiService.filterAndRankCoins(analyzedCoins, aiSettings);
+
+                    // Ensure variety - get different recommendation types
+                    const buyCoins = filteredCoins.filter(c => c.recommendation === 'BUY');
+                    const holdCoins = filteredCoins.filter(c => c.recommendation === 'HOLD');
+                    const watchCoins = filteredCoins.filter(c => c.recommendation === 'WATCH');
+                    const sellCoins = filteredCoins.filter(c => c.recommendation === 'SELL');
+
+                    // Create a balanced mix, prioritizing better recommendations
+                    let finalList: any = [];
+
+                    // Add up to 6 BUY recommendations
+                    finalList.push(...buyCoins.slice(0, 6));
+
+                    // Fill remaining slots with HOLD and WATCH
+                    const remaining = 15 - finalList.length;
+                    if (remaining > 0) {
+                        const combined = [...holdCoins, ...watchCoins]
+                            .sort((a, b) => b.aiScore - a.aiScore); // Sort by AI score
+                        finalList.push(...combined.slice(0, remaining));
+                    }
+
+                    // If still not enough, add any remaining coins
+                    if (finalList.length < 5) {
+                        const allRemaining = filteredCoins.filter(coin =>
+                            !finalList.find(f => f.id === coin.id)
+                        );
+                        finalList.push(...allRemaining.slice(0, 5 - finalList.length));
+                    }
+
+                    // Ensure minimum of 5 coins
+                    if (finalList.length < 5 && analyzedCoins.length >= 5) {
+                        const topByScore = analyzedCoins
+                            .sort((a, b) => b.aiScore - a.aiScore)
+                            .slice(0, 5);
+                        finalList = topByScore;
+                    }
+
+                    // Generate summary
+                    const summary = aiService.generateRecommendationSummary(analyzedCoins);
+                    setAiSummary(summary);
+
+                    setCoinList(finalList);
+                } catch (error) {
+                    console.error('Error analyzing coins:', error);
+                    // Fallback to original coins with basic analysis
+                    const coinsWithFallback = allCoins.map(coin => ({
+                        ...coin,
+                        ...aiService.generateFallbackAnalysis(coin, aiSettings)
+                    }));
+                    setCoinList(coinsWithFallback);
+                } finally {
+                    setIsAnalyzing(false);
+                }
+            } else {
+                setCoinList(allCoins);
+            }
+        };
+
+        processCoins();
+    }, [trending, topByMarketCap, newest, aiSettings])
 
     const handleSwipe = (direction: 'like' | 'pass') => {
         if (isAnimating || !currentCoin) return;
@@ -122,6 +188,12 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
         }
     };
 
+    const handleAISettingsSave = (newSettings: AISettings) => {
+        setAiSettings(newSettings);
+        // Reset current index to start fresh with new settings
+        setCurrentIndex(0);
+    };
+
     const handleTradeClick = () => {
         if (currentCoin) {
             setCoin(currentCoin);
@@ -130,7 +202,7 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
     };
 
     const currentCoin = coinList[currentIndex];
-
+    const currentPrice = currentCoin ? Number(currentCoin?.marketCap) / Number(currentCoin?.totalSupply) : 0
 
     return (
         <div className="flex flex-col h-full">
@@ -149,23 +221,40 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                     >
                         Create a Coin
                     </button>
+                    <button
+                        className="bg-purple-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-600 transition-colors flex items-center space-x-1"
+                        onClick={() => setShowAISettings(true)}
+                    >
+                        <Sparkles size={14} />
+                        <span>AI Settings</span>
+                    </button>
                 </div>
+                {/* {aiSummary && (
+                    <div className="mt-3 text-xs text-gray-600 bg-white bg-opacity-50 rounded-lg p-2">
+                        {aiSummary}
+                    </div>
+                )} */}
             </div>
 
-            {coinList.length === 0 && (
+            {(coinList.length === 0 || isAnalyzing) ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-                    <h2 className="text-lg font-medium mb-2">AI is analyzing coins...</h2>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4">
+                        {/* <Loader2 className="animate-spin" /> */}
+                    </div>
+                    <h2 className="text-lg font-medium mb-2">
+                        {isAnalyzing ? 'AI is analyzing coins...' : 'Loading coins...'}
+                    </h2>
                     <p className="text-gray-600 text-sm">
-                        Our AI is processing market data to find the best opportunities for you.
+                        {isAnalyzing
+                            ? 'Our AI is processing market data to find the best opportunities for you.'
+                            : 'Fetching the latest coin data from the network.'
+                        }
                     </p>
                 </div>
-            )}
-
-            {currentIndex >= coinList.length ? (
+            ) : currentIndex >= coinList.length ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-6 bg-gradient-to-br from-purple-50 to-blue-50">
                     <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mb-4">
-                        <Zap className="text-white" size={32} />
+                        <CircleCheckBig className="text-white" size={32} />
                     </div>
                     <h2 className="text-2xl font-bold mb-2">All caught up!</h2>
 
@@ -233,20 +322,35 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                                     />
 
                                     {/* AI Score Badge */}
-                                    <div className="absolute top-3 right-3 bg-black bg-opacity-70 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
-                                        <Brain size={12} />
-                                        <span>AI: {currentCoin?.aiScore}</span>
-                                    </div>
+                                    {currentCoin?.aiScore && (
+                                        <div className="absolute top-3 right-3 bg-black bg-opacity-70 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+                                            {/* <Brain size={12} /> */}
+                                            <span>Score: {currentCoin?.aiScore}%</span>
+                                        </div>
+                                    )}
 
                                     {/* Risk Level Badge */}
-                                    <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-medium ${getRiskColor(currentCoin?.riskLevel)}`}>
-                                        <div className="flex items-center space-x-1">
-                                            {currentCoin?.riskLevel === 'HIGH' && <AlertTriangle size={12} />}
-                                            {currentCoin?.riskLevel === 'MEDIUM' && <Shield size={12} />}
-                                            {currentCoin?.riskLevel === 'LOW' && <Shield size={12} />}
-                                            <span>{currentCoin?.riskLevel}</span>
+                                    {currentCoin?.riskLevel && (
+                                        <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-medium ${getRiskColor(currentCoin?.riskLevel)}`}>
+                                            <div className="flex items-center space-x-1">
+                                                {currentCoin?.riskLevel === 'HIGH' && <AlertTriangle size={12} />}
+                                                {currentCoin?.riskLevel === 'MEDIUM' && <Shield size={12} />}
+                                                {currentCoin?.riskLevel === 'LOW' && <Shield size={12} />}
+                                                <span>{currentCoin?.riskLevel}</span>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
+
+                                    {/* AI Insights Button */}
+                                    {currentCoin?.aiScore && (
+                                        <button
+                                            onClick={() => setShowAIInsights(true)}
+                                            className="absolute bottom-3 right-3 bg-purple-500 bg-opacity-90 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1 hover:bg-opacity-100 transition-all"
+                                        >
+                                            <Eye size={12} />
+                                            <span>Show Analysis</span>
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Content */}
@@ -256,9 +360,16 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                                         <h2 className="text-xl font-bold">{currentCoin?.name}</h2>
                                         <div className="flex items-center justify-between">
                                             <span className="text-gray-500">${currentCoin?.symbol}</span>
-                                            <span className="text-sm text-purple-600 bg-purple-100 px-2 py-1 rounded">
-                                                {currentCoin?.category}
-                                            </span>
+                                            <div className="flex items-center space-x-2">
+                                                {currentCoin?.recommendation && (
+                                                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${getRecommendationColor(currentCoin?.recommendation)}`}>
+                                                        {currentCoin?.recommendation}
+                                                    </span>
+                                                )}
+                                                <span className="text-sm text-purple-600 bg-purple-100 px-2 py-1 rounded">
+                                                    {currentCoin?.category || 'Other'}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -273,7 +384,7 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                                             <DollarSign size={16} className="text-green-500" />
                                             <div>
                                                 <div className="text-gray-500">Price</div>
-                                                <div className="font-medium">${currentCoin?.currentPrice > 0.00001 ? currentCoin?.currentPrice?.toFixed(6) : currentCoin?.currentPrice?.toFixed(9)}</div>
+                                                <div className="font-medium">${currentPrice > 0.00001 ? currentPrice.toFixed(6) : currentPrice?.toFixed(9)}</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
@@ -293,7 +404,8 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <div className="w-4 h-4 bg-orange-500 rounded-full"></div>
+                                            <Cylinder size={16} className="text-orange-500"   />
+                                            {/* <div className="w-4 h-4 bg-orange-500 rounded-full"></div> */}
                                             <div>
                                                 <div className="text-gray-500">Market Cap</div>
                                                 <div className="font-medium">${(Number(currentCoin?.marketCap) / 1000000).toFixed(1)}M</div>
@@ -306,13 +418,26 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                                         Created by @{currentCoin?.creatorProfile?.handle || 'anonymous'}
                                     </div>
 
-                                    {/* Trade Button */}
-                                    <button
-                                        onClick={handleTradeClick}
-                                        className="w-full bg-blue-500 text-white py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors"
-                                    >
-                                        Trade Now
-                                    </button>
+                                    <div className='flex flex-row space-x-1'>
+                                        {currentCoin?.aiScore && (
+                                            <button
+                                                onClick={() => setShowAIInsights(true)}
+                                                className="w-full bg-purple-500 text-white py-2 rounded-lg font-medium hover:bg-purple-600 transition-colors"
+                                            >
+                                                Show Analysis
+                                            </button>
+                                        )}
+
+                                        {/* Trade Button */}
+                                        <button
+                                            onClick={handleTradeClick}
+                                            className="w-full bg-blue-500 text-white py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                                        >
+                                            Trade Now
+                                        </button>
+                                    </div>
+
+
                                 </div>
                             </div>
                         </div>
@@ -347,6 +472,21 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
 
                 </div>
             )}
+
+            {/* AI Settings Modal */}
+            <AISettingsModal
+                isOpen={showAISettings}
+                onClose={() => setShowAISettings(false)}
+                settings={aiSettings}
+                onSave={handleAISettingsSave}
+            />
+
+            {/* AI Insights Modal */}
+            <AIInsightsModal
+                isOpen={showAIInsights}
+                onClose={() => setShowAIInsights(false)}
+                coin={currentCoin}
+            />
 
         </div>
     )

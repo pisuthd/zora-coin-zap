@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.3",
     "@coinbase/onchainkit": "latest",
     "@farcaster/frame-sdk": "^0.0.35",
     "@tanstack/react-query": "^5",
