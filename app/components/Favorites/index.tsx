@@ -7,153 +7,82 @@ interface FavoritesPageProps {
   setActiveTab: (tab: string) => void;
   setCoin: (coin: any) => void;
   likedCoins?: any[];
+  setLikedCoins?: (coins: any[]) => void;
 }
 
-// Mock data for demonstration - in real app this would come from local storage or context
-const mockFavoriteCoins = [
-  {
-    id: '1',
-    name: 'CryptoKitties Revival',
-    symbol: 'CKTR',
-    description: 'The beloved NFT collection is back as a content coin, riding the nostalgia wave',
-    image: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=400&h=400&fit=crop',
-    creator: 'nostalgia_dev',
-    marketCap: 1250000,
-    volume24h: 45000,
-    holders: 892,
-    currentPrice: 0.00234,
-    change24h: 23.5,
-    aiScore: 85,
-    riskLevel: 'LOW',
-    category: 'Gaming & NFTs',
-    likedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+// Transform Zora coin data to favorites format
+const transformCoinData = (coin: any) => {
+  const currentPrice = coin.marketCap && coin.totalSupply 
+    ? Number(coin.marketCap) / Number(coin.totalSupply) 
+    : 0;
+    
+  // Calculate percentage change from marketCapDelta24h
+  const change24h = coin.marketCapDelta24h && coin.marketCap 
+    ? (Number(coin.marketCapDelta24h) / (Number(coin.marketCap) - Number(coin.marketCapDelta24h))) * 100
+    : 0;
+    
+  return {
+    id: coin.id,
+    name: coin.name,
+    symbol: coin.symbol,
+    description: coin.description || `A content coin created by ${coin.creatorProfile?.handle || 'anonymous'} on the Zora protocol.`,
+    image: coin.mediaContent?.previewImage?.small || coin.mediaContent?.previewImage?.medium || 'https://via.placeholder.com/400x400?text=' + encodeURIComponent(coin.name || 'Coin'),
+    creator: coin.creatorProfile?.handle || 'anonymous',
+    marketCap: Number(coin.marketCap) || 0,
+    volume24h: Number(coin.volume24h) || 0,
+    holders: coin.uniqueHolders || 0,
+    currentPrice,
+    change24h,
+    aiScore: coin.aiScore || 0,
+    riskLevel: coin.riskLevel || 'MEDIUM',
+    category: coin.category || 'Content',
+    likedAt: coin.likedAt || new Date(),
+    recommendation: coin.recommendation || 'HOLD',
     aiInsights: {
-      momentum: 'Strong upward momentum with 23.5% gain',
-      social: 'High engagement, trending on social media',
-      technical: 'Breaking resistance levels, good volume',
-      recommendation: 'BUY'
-    }
-  },
-  {
-    id: '2',
-    name: 'AI Art Collective',
-    symbol: 'AIAC',
-    description: 'Community-driven AI art platform token featuring exclusive generative collections',
-    image: 'https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?w=400&h=400&fit=crop',
-    creator: 'ai_artist_dao',
-    marketCap: 850000,
-    volume24h: 32000,
-    holders: 654,
-    currentPrice: 0.00187,
-    change24h: -5.2,
-    aiScore: 72,
-    riskLevel: 'MEDIUM',
-    category: 'AI & Art',
-    likedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-    aiInsights: {
-      momentum: 'Temporary pullback, fundamentals strong',
-      social: 'Growing community, active Discord',
-      technical: 'Support holding at $0.0018 level',
-      recommendation: 'HOLD'
-    }
-  },
-  {
-    id: '3',
-    name: 'DeFi Education Hub',
-    symbol: 'DEFI',
-    description: 'Educational content platform teaching DeFi concepts through interactive experiences',
-    image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=400&fit=crop',
-    creator: 'defi_teacher',
-    marketCap: 680000,
-    volume24h: 28000,
-    holders: 445,
-    currentPrice: 0.00123,
-    change24h: 12.3,
-    aiScore: 78,
-    riskLevel: 'LOW',
-    category: 'Education & Finance',
-    likedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    aiInsights: {
-      momentum: 'Steady growth, educational bull market',
-      social: 'High retention, quality community',
-      technical: 'Consistent uptrend, low volatility',
-      recommendation: 'BUY'
-    }
-  },
-  {
-    id: '4',
-    name: 'Music Metaverse',
-    symbol: 'MUSIC',
-    description: 'Virtual concerts and music NFTs in an immersive metaverse experience',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
-    creator: 'meta_musician',
-    marketCap: 1580000,
-    volume24h: 56000,
-    holders: 789,
-    currentPrice: 0.00345,
-    change24h: 8.7,
-    aiScore: 76,
-    riskLevel: 'MEDIUM',
-    category: 'Music & Entertainment',
-    likedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
-    aiInsights: {
-      momentum: 'Building momentum, partnership news',
-      social: 'Music community growing, artist onboarding',
-      technical: 'Above moving averages, bullish pattern',
-      recommendation: 'BUY'
-    }
-  },
-  {
-    id: '5',
-    name: 'Viral Factory',
-    symbol: 'VIRAL',
-    description: 'Community-driven meme creation and monetization platform',
-    image: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=400&h=400&fit=crop',
-    creator: 'meme_lord_420',
-    marketCap: 2100000,
-    volume24h: 89000,
-    holders: 1337,
-    currentPrice: 0.00456,
-    change24h: 67.8,
-    aiScore: 91,
-    riskLevel: 'HIGH',
-    category: 'Memes & Viral',
-    likedAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-    aiInsights: {
-      momentum: 'Explosive growth, riding viral wave',
-      social: 'Viral on TikTok, celebrity endorsements',
-      technical: 'Parabolic move, watch for correction',
-      recommendation: 'WATCH'
-    }
-  }
-];
+      momentum: coin.aiAnalysis?.momentum || 'Analysis pending',
+      social: coin.aiAnalysis?.social || 'Community data updating',
+      technical: coin.aiAnalysis?.technical || 'Technical analysis in progress',
+      recommendation: coin.recommendation || 'HOLD'
+    },
+    // Keep original Zora data for trading
+    originalData: coin
+  };
+};
 
-export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: FavoritesPageProps) {
-  const [favorites, setFavorites] = useState<any[]>(mockFavoriteCoins);
+export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [], setLikedCoins }: FavoritesPageProps) {
+  const [favorites, setFavorites] = useState<any[]>([]);
   const [sortBy, setSortBy] = useState<'recent' | 'aiScore' | 'performance' | 'marketCap'>('recent');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
 
-  const categories = ['all', 'Gaming & NFTs', 'AI & Art', 'Education & Finance', 'Music & Entertainment', 'Memes & Viral'];
+  // Get unique categories from actual liked coins
+  const categories = ['all', ...Array.from(new Set(likedCoins.map(coin => {
+    const transformed = transformCoinData(coin);
+    return transformed.category;
+  })))];
 
-  // Combine mock data with actual liked coins from Tinder interface
+  // Transform and set liked coins as favorites
   useEffect(() => {
     if (likedCoins.length > 0) {
-      const combinedFavorites = [...likedCoins, ...mockFavoriteCoins];
-      // Remove duplicates based on id
-      const uniqueFavorites = combinedFavorites.filter((coin, index, self) => 
-        index === self.findIndex(c => c.id === coin.id)
-      );
-      setFavorites(uniqueFavorites);
+      const transformedFavorites = likedCoins.map(transformCoinData);
+      setFavorites(transformedFavorites);
+    } else {
+      setFavorites([]);
     }
   }, [likedCoins]);
 
   const handleRemoveFavorite = (coinId: string) => {
+    // Remove from local state
     setFavorites(prev => prev.filter(coin => coin.id !== coinId));
+    // Remove from parent state
+    if (setLikedCoins) {
+      setLikedCoins(likedCoins.filter(coin => coin.id !== coinId));
+    }
   };
 
   const handleTradeClick = (coin: any) => {
-    setCoin(coin);
+    // Use original Zora data for trading
+    setCoin(coin.originalData || coin);
     setActiveTab('trade');
   };
 
@@ -231,11 +160,11 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
           Start swiping in AI Discovery to build your collection of favorite coins!
         </p>
         <button
-          onClick={() => setActiveTab('ai-swipe')}
+          onClick={() => setActiveTab('home')}
           className="bg-purple-500 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2"
         >
-          <Brain size={16} />
-          <span>Start AI Swiping</span>
+          {/* <Brain size={16} /> */}
+          <span>Start Discovering</span>
         </button>
       </div>
     );
@@ -246,8 +175,7 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
       {/* Header */}
       <div className="bg-white border-b px-4 py-3">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <Heart className="text-red-500" size={20} />
+          <div className="flex items-center space-x-2"> 
             <h1 className="text-xl font-bold">My Favorites</h1>
           </div>
           <span className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm font-medium">
@@ -256,7 +184,7 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
         </div>
 
         {/* Controls */}
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -280,14 +208,8 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
             </select>
           </div>
 
-          <button
-            onClick={() => setActiveTab('ai-swipe')}
-            className="text-purple-600 text-sm flex items-center space-x-1"
-          >
-            <span>Find More</span>
-            <Brain size={14} />
-          </button>
-        </div>
+          
+        </div> */}
 
         {/* Filter panel */}
         {showFilters && (
@@ -313,7 +235,7 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
       </div>
 
       {/* Summary stats */}
-      <div className="bg-white border-b px-4 py-3">
+      {/* <div className="bg-white border-b px-4 py-3">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-lg font-bold text-green-600">
@@ -334,7 +256,7 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
             <div className="text-xs text-gray-500">Total Market Cap</div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Favorites list */}
       <div className="flex-1 overflow-auto p-4 space-y-3">
@@ -394,8 +316,8 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center space-x-1">
-                      <Brain className="text-purple-500" size={14} />
-                      <span className="text-sm font-medium">AI: {coin.aiScore}</span>
+                      {/* <Brain className="text-purple-500" size={14} /> */}
+                      <span className="text-sm font-medium">Score: {coin.aiScore}%</span>
                     </div>
                     <div className={`px-2 py-1 rounded text-xs font-medium ${getRiskColor(coin.riskLevel)}`}>
                       {coin.riskLevel}
@@ -411,7 +333,12 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
               <div className="grid grid-cols-3 gap-3 px-4 pb-3 text-sm">
                 <div>
                   <div className="text-gray-500">Price</div>
-                  <div className="font-medium">${coin.currentPrice?.toFixed(6)}</div>
+                  <div className="font-medium">
+                    ${coin.currentPrice > 0.00001 
+                      ? coin.currentPrice.toFixed(6) 
+                      : coin.currentPrice.toFixed(9)
+                    }
+                  </div>
                 </div>
                 <div>
                   <div className="text-gray-500">24h Change</div>
@@ -421,7 +348,14 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
                 </div>
                 <div>
                   <div className="text-gray-500">Market Cap</div>
-                  <div className="font-medium">${(coin.marketCap / 1000000).toFixed(1)}M</div>
+                  <div className="font-medium">
+                    ${coin.marketCap > 1000000 
+                      ? `${(coin.marketCap / 1000000).toFixed(1)}M`
+                      : coin.marketCap > 1000
+                      ? `${(coin.marketCap / 1000).toFixed(1)}K`
+                      : `${coin.marketCap.toFixed(0)}`
+                    }
+                  </div>
                 </div>
               </div>
 
@@ -441,7 +375,7 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
                 >
                   Trade Now
                 </button>
-                <button
+                {/* <button
                   onClick={() => {
                     setCoin(coin);
                     // Could open a detailed view modal here
@@ -449,7 +383,7 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
                   className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 text-sm hover:bg-gray-50 transition-colors"
                 >
                   Details
-                </button>
+                </button> */}
               </div>
             </div>
           ))
@@ -459,7 +393,7 @@ export function FavoritesPage({ setActiveTab, setCoin, likedCoins = [] }: Favori
       {/* Bottom action */}
       <div className="bg-white border-t p-4">
         <button
-          onClick={() => setActiveTab('ai-swipe')}
+          onClick={() => setActiveTab('home')}
           className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium flex items-center justify-center space-x-2"
         >
           <Heart size={16} />

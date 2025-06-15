@@ -20,9 +20,7 @@ import {
 } from "@coinbase/onchainkit/wallet";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "./components/DemoComponents";
-import { Icon } from "./components/DemoComponents";
-// import { CoinList } from "./components/CoinList";
-// import { TinderSwipe } from "./components/AI/TinderSwipe";
+import { Icon } from "./components/DemoComponents"; 
 import { HomePage } from "./components/Home";
 import { FavoritesPage } from "./components/Favorites";
 import { Home, Zap, Brain, Heart } from "lucide-react"
@@ -122,7 +120,7 @@ export default function App() {
           {activeTab === "ai-swipe" && <TinderSwipe setActiveTab={setActiveTab} setCoin={setCoin} likedCoins={likedCoins} setLikedCoins={setLikedCoins} />} */}
           {activeTab === "home" && <HomePage setActiveTab={setActiveTab} setCoin={setCoin} likedCoins={likedCoins} setLikedCoins={setLikedCoins} />}
           {activeTab === "trade" && <TradePage setActiveTab={setActiveTab} coin={coin} />}
-          {activeTab === "favorites" && <FavoritesPage setActiveTab={setActiveTab} setCoin={setCoin} likedCoins={likedCoins} />}
+          {activeTab === "favorites" && <FavoritesPage setActiveTab={setActiveTab} setCoin={setCoin} likedCoins={likedCoins} setLikedCoins={setLikedCoins} />}
           {activeTab === "mycoins" && <PortfolioPage setActiveTab={setActiveTab} setCoin={setCoin} />}
           {activeTab === "create" && <CreatePage setActiveTab={setActiveTab} />}
           {activeTab === "profile" && <CreatorProfilePage setActiveTab={setActiveTab} />}
