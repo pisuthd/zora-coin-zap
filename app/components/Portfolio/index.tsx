@@ -82,7 +82,7 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
       <div className="p-4 pb-0">
         <h1 className="text-xl font-bold mb-4">Portfolio</h1>
 
-        {!address && (
+        {/* {!address && (
           <div className=" my-4 mt-0 bg-amber-50 border border-amber-200 rounded-lg shadow-sm overflow-hidden">
             <div className="p-4">
               <div className="flex items-start">
@@ -99,7 +99,7 @@ export function PortfolioPage({ setCoin, setActiveTab }: PortfolioPageProps) {
                 </div>
               </div>
             </div>
-          </div>)}
+          </div>)} */}
 
         {/* Token Balances */}
         <div className="grid grid-cols-2 gap-3 mb-4">

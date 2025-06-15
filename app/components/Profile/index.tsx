@@ -30,8 +30,6 @@ export function CreatorProfilePage({ setActiveTab }: CreatorProfilePageProps) {
     }
   }, [address]);
 
-  console.log("profile : ", profileData)
-
   const copyAddress = async () => {
     if (address) {
       await navigator.clipboard.writeText(address);
