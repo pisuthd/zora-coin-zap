@@ -81,7 +81,7 @@ export function HomePage({ setActiveTab, setCoin, likedCoins, setLikedCoins }: H
                     // If still not enough, add any remaining coins
                     if (finalList.length < 5) {
                         const allRemaining = filteredCoins.filter(coin =>
-                            !finalList.find(f => f.id === coin.id)
+                            !finalList.find((f: any) => f.id === coin.id)
                         );
                         finalList.push(...allRemaining.slice(0, 5 - finalList.length));
                     }
