@@ -1,7 +1,7 @@
 // Claude AI Service for Coin Analysis and Recommendations using Official SDK
 import Anthropic from '@anthropic-ai/sdk';
 
-const CLAUDE_API_KEY = atob("c2stYW50LWFwaTAzLVpCQTN3ejVfT1RvTUlUd1gtM2xXMDk2bkwtSWhwbGdFLTBBRXJOakJKNmwyT2dRTjhwZXNVVHpvMG1UeWdrNndCaktvMDZKa0RLZVpRVkM2SDc1NGVnLUhVZG0yd0FB")
+const CLAUDE_API_KEY = process.env.NEXT_PUBLIC_CLAUDE_API_KEY
 
 export interface CoinAnalysis {
   aiScore: number;
