@@ -1,8 +1,7 @@
 "use client";
 
 import { CoinContext } from "@/contexts/coin";
-import { useState, useEffect, useContext } from "react";
-import TradePanel from "./Trade"
+import { useState, useEffect, useContext } from "react"; 
 
 type CoinListProps = {
   setCoin: (coin: any) => void;
